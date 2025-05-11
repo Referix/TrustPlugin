@@ -1,6 +1,7 @@
 package org.referix.commands.command.utilcommand;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -12,6 +13,7 @@ import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
+import org.referix.utils.PlayerDataCache;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,11 +22,12 @@ import java.util.UUID;
 public class TrustAccept extends AbstractCommand {
     private final DatabaseManager databaseManager;
     private ConfigManager configManager;
-
-    public TrustAccept(String command, DatabaseManager databaseManager, ConfigManager configManager) {
+    private PlayerDataCache playerDataCache;
+    public TrustAccept(String command, DatabaseManager databaseManager, ConfigManager configManager, PlayerDataCache playerDataCache) {
         super(command);
         this.databaseManager = databaseManager;
         this.configManager = configManager;
+        this.playerDataCache = playerDataCache;
     }
 
     @Override
@@ -62,8 +65,8 @@ public class TrustAccept extends AbstractCommand {
                 databaseManager.searchData(DatabaseTable.PLAYER_TRUSTS, "player_id = '" + actorId + "'", PlayerTrustDB.class, actorList -> {
                     double trustedPlayerTrust = actorList.isEmpty() ? 0 : actorList.getFirst().getScore();
 
-                    double baseTrust = TrustPlugin.getInstance().getConfig().getDouble("trust.base_trust", 1.0);
-                    double baseUntrust = TrustPlugin.getInstance().getConfig().getDouble("trust.base_untrust", -1.0);
+                    double baseTrust = configManager.getBaseTrust();
+                    double baseUntrust = configManager.getBaseUntrust();
 
                     double delta;
 
@@ -74,12 +77,27 @@ public class TrustAccept extends AbstractCommand {
                     }
 
                     double newTrust = playerTrust + delta;
+                    double firstLineScore = configManager.getFirstLineScore();
+                    double secondLineScore = configManager.getSecondLineScore();
+                    System.out.println(firstLineScore + " " + secondLineScore + " " + newTrust);
 
                     databaseManager.updatePlayerTrust(targetId, newTrust);
 
                     databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
 
                     String sign = delta >= 0 ? "+" : "-";
+                    if (newTrust < firstLineScore && newTrust > secondLineScore){
+                        System.out.println("first line");
+                        Component messageTemplate = configManager.getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                        String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
+                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                    }
+                    if (newTrust < secondLineScore){
+                        System.out.println("second line");
+                        Component messageTemplate = configManager.getMessage("second_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                        String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
+                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                    }
                     Component messageTemplate = configManager.getMessage(
                             "trust_change_message",
                             "player", Bukkit.getOfflinePlayer(targetId).getName(),
@@ -87,6 +105,8 @@ public class TrustAccept extends AbstractCommand {
                             "sign", sign,
                             "delta", String.format("%.2f", Math.abs(delta))
                     );
+                    playerDataCache.set(targetId, String.valueOf(Math.floor(newTrust)));
+
                     player.sendMessage(messageTemplate);
                 });
             });

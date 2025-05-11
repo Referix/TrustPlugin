@@ -9,17 +9,15 @@ import org.referix.commands.command.utilcommand.TrustAccept;
 import org.referix.commands.command.utilcommand.TrustDeny;
 import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
-import org.referix.database.pojo.PlayerTrustDB;
-import org.referix.database.pojo.TrustChangeDB;
 import org.referix.utils.ConfigManager;
-
-import java.util.UUID;
+import org.referix.utils.PlayerDataCache;
+import org.referix.utils.PlayerTrustPlaceholders;
 
 public final class TrustPlugin extends JavaPlugin {
 
     private static TrustPlugin plugin;
     private DatabaseManager databaseManager;
-
+    private PlayerDataCache playerDataCache;
     private ConfigManager configManager;
 
     @Override
@@ -30,16 +28,20 @@ public final class TrustPlugin extends JavaPlugin {
         databaseManager.createTable(DatabaseTable.TRUST_CHANGES);
         saveDefaultConfig();
         configManager = new ConfigManager(this);
+        playerDataCache = new PlayerDataCache();
 
 
-
-        Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(databaseManager), this);
+        Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(databaseManager, playerDataCache), this);
 
         new AddReputation("addrep", databaseManager,configManager);
         new RemoveReputation("removerep", databaseManager, configManager);
         new ListReputation("listrep", databaseManager,configManager);
-        new TrustAccept("trustaccept", databaseManager, configManager);
+        new TrustAccept("trustaccept", databaseManager, configManager, playerDataCache);
         new TrustDeny("trustdeny",databaseManager, configManager);
+
+
+
+        new PlayerTrustPlaceholders(this, playerDataCache).register();
     }
 
     @Override

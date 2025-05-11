@@ -11,3 +11,20 @@ messages:
   player_not_found: "Гравець не знайдений."
   page_should_be_number: "Сторінка повинна бути числом."
   trust_change_message: "<#00ff00>Довіра гравця {player} змінена до {trust_level} ({sign}{delta})"
+setting:
+  base_trust: 1
+  base_untrust: -1
+  #кількість очків довіри для отримання доступу до /trust /untrust
+  trust_player: 100
+
+  #перша межа
+  first_line:
+      score: 30
+      command: "kick {player}"
+
+  #друга межа
+  second_line:
+      score: 10
+      command: "ban {player}"
+
+save-zone:

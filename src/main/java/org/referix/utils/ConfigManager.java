@@ -26,6 +26,35 @@ public class ConfigManager {
     private final String notCorrectly;
     private final String trustChangeMassege;
 
+    //setting
+
+    private final double baseTrust;
+    private final double baseUntrust;
+
+    private final String firstLineCommand;
+
+    private final double firstLineScore;
+    private final String secondLineCommand;
+    private final double secondLineScore;
+
+    public double getBaseUntrust() {
+        return baseUntrust;
+    }
+
+    public double getBaseTrust() {
+        return baseTrust;
+    }
+
+
+    public double getFirstLineScore() {
+        return firstLineScore;
+    }
+
+
+    public double getSecondLineScore() {
+        return secondLineScore;
+    }
+
     public ConfigManager(TrustPlugin plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
@@ -43,6 +72,18 @@ public class ConfigManager {
         this.playerNotFound = config.getString("messages.player_not_found");
         this.pageShouldBeNumber = config.getString("messages.page_should_be_number");
         this.trustChangeMassege = config.getString("messages.trust_change_message");
+
+        //setting
+        this.baseTrust = config.getDouble("setting.base_trust");
+        this.baseUntrust = config.getDouble("setting.base_trust");
+
+        //section
+        this.firstLineScore = config.getDouble("setting.first_line.score");
+        this.firstLineCommand = config.getString("setting.first_line.command");
+
+
+        this.secondLineScore = config.getDouble("setting.second_line.score");
+        this.secondLineCommand = config.getString("setting.second_line.command");
     }
 
     /**
@@ -76,6 +117,8 @@ public class ConfigManager {
             case "player_not_found" -> playerNotFound;
             case "page_should_be_number" -> pageShouldBeNumber;
             case "trust_change_message" -> trustChangeMassege;
+            case "second_line.command" -> secondLineCommand;
+            case "first_line.command" -> firstLineCommand;
             default -> "";
         };
     }
