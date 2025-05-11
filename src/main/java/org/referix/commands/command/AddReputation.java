@@ -10,6 +10,7 @@ import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AddReputation extends AbstractCommand {
 
@@ -44,7 +45,16 @@ public class AddReputation extends AbstractCommand {
 
     @Override
     public List<String> complete(CommandSender sender, String[] args) {
-
+        if (args.length == 1) {
+            // Підказка для імен гравців
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+        } else if (args.length == 2) {
+            // Підказка для можливих причин зміни репутації
+            return List.of("Причина");
+        }
         return null;
     }
+
 }

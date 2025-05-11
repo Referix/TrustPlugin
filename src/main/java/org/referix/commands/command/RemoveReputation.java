@@ -8,6 +8,9 @@ import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class RemoveReputation extends AbstractCommand {
 
     private final DatabaseManager databaseManager;
@@ -37,5 +40,19 @@ public class RemoveReputation extends AbstractCommand {
 
 
         return false;
+    }
+
+    @Override
+    public List<String> complete(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            // Підказка для імен гравців
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+        } else if (args.length == 2) {
+            // Підказка для можливих причин зміни репутації
+            return List.of("Причина");
+        }
+        return null;
     }
 }

@@ -105,6 +105,21 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance()); // Запуск асинхронного потоку
     }
 
+    public void updatePlayerTrust(UUID playerId, double newTrust) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "UPDATE player_trusts SET score = ? WHERE player_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setDouble(1, newTrust);
+                    stmt.setString(2, playerId.toString());
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
 
 
 
@@ -206,7 +221,68 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    public void countRows(String sql, Consumer<Integer> callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int count = 0;
+                try (PreparedStatement stmt = connection.prepareStatement(sql);
+                     ResultSet rs = stmt.executeQuery()) {
 
+                    if (rs.next()) {
+                        count = rs.getInt(1);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                int finalCount = count;
+                Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.accept(finalCount));
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+    public void countRows(String sql, Object[] params, Consumer<Integer> callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int count = 0;
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    for (int i = 0; i < params.length; i++) {
+                        stmt.setObject(i + 1, params[i]);
+                    }
+
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            count = rs.getInt(1);
+                        }
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                int finalCount = count;
+                Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.accept(finalCount));
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+    public void deleteById(DatabaseTable table, Object id) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "DELETE FROM " + table.getTableName() + " WHERE id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setObject(1, id);
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
 
 
     public void close() {

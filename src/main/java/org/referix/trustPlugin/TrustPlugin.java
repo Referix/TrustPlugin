@@ -5,6 +5,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.referix.commands.command.AddReputation;
 import org.referix.commands.command.ListReputation;
 import org.referix.commands.command.RemoveReputation;
+import org.referix.commands.command.utilcommand.TrustAccept;
+import org.referix.commands.command.utilcommand.TrustDeny;
 import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
@@ -29,6 +31,8 @@ public final class TrustPlugin extends JavaPlugin {
         new AddReputation("addrep", databaseManager);
         new RemoveReputation("removerep", databaseManager);
         new ListReputation("listrep", databaseManager);
+        new TrustAccept("trustaccept", databaseManager);
+        new TrustDeny("trustdeny",databaseManager);
     }
 
     @Override

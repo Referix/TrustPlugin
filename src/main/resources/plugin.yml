@@ -17,4 +17,13 @@ commands:
       - untrust
   listrep:
     description: Показує історію змін репутації
+    permission: trust.list
+    usage: /listrep [all|<гравець>] [сторінка]
+  trustaccept:
+    description: додати репутацію
+    permission: trust.accept
+    usage: /listrep [all|<гравець>] [сторінка]
+  trustdeny:
+    description: відмінити додавання цієї репутації
+    permission: trust.deny
     usage: /listrep [all|<гравець>] [сторінка]
