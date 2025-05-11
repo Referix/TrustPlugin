@@ -1,0 +1,13 @@
+messages:
+  not_player: "Ця команда доступна лише гравцям."
+  no_correctly_command: "Ця команда не коректно введена"
+  no_permission: "У вас немає дозволу."
+  usage_trust_accept: "Використання: /trustaccept {id}"
+  record_not_found: "Запис з ID {id} не знайдено."
+  reputation_not_found: "Записів не знайдено."
+  only_players_command: "тільки гравці можуть використовувати цю команду."
+  reputations_for_all: "== Репутація всіх гравців (сторінка {page}) =="
+  reputations_for_player: "== Репутація гравця {player} (сторінка {page}) =="
+  player_not_found: "Гравець не знайдений."
+  page_should_be_number: "Сторінка повинна бути числом."
+  trust_change_message: "<#00ff00>Довіра гравця {player} змінена до {trust_level} ({sign}{delta})"

@@ -11,6 +11,7 @@ import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.utils.ConfigManager;
 
 import java.util.UUID;
 
@@ -19,20 +20,26 @@ public final class TrustPlugin extends JavaPlugin {
     private static TrustPlugin plugin;
     private DatabaseManager databaseManager;
 
+    private ConfigManager configManager;
+
     @Override
     public void onEnable() {
         plugin = this;
         databaseManager = new DatabaseManager(getDataFolder().getPath() + "/database/database.db");
         databaseManager.createTable(DatabaseTable.PLAYER_TRUSTS);
         databaseManager.createTable(DatabaseTable.TRUST_CHANGES);
+        saveDefaultConfig();
+        configManager = new ConfigManager(this);
+
+
 
         Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(databaseManager), this);
 
-        new AddReputation("addrep", databaseManager);
-        new RemoveReputation("removerep", databaseManager);
-        new ListReputation("listrep", databaseManager);
-        new TrustAccept("trustaccept", databaseManager);
-        new TrustDeny("trustdeny",databaseManager);
+        new AddReputation("addrep", databaseManager,configManager);
+        new RemoveReputation("removerep", databaseManager, configManager);
+        new ListReputation("listrep", databaseManager,configManager);
+        new TrustAccept("trustaccept", databaseManager, configManager);
+        new TrustDeny("trustdeny",databaseManager, configManager);
     }
 
     @Override
@@ -42,5 +49,9 @@ public final class TrustPlugin extends JavaPlugin {
 
     public static TrustPlugin getInstance() {
         return plugin;
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 }

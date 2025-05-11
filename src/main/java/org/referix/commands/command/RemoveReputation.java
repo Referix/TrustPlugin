@@ -1,5 +1,6 @@
 package org.referix.commands.command;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -7,6 +8,7 @@ import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.utils.ConfigManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,23 +16,27 @@ import java.util.stream.Collectors;
 public class RemoveReputation extends AbstractCommand {
 
     private final DatabaseManager databaseManager;
+    private ConfigManager configManager;
 
-    public RemoveReputation(String command, DatabaseManager databaseManager) {
+    public RemoveReputation(String command, DatabaseManager databaseManager, ConfigManager configManager) {
         super(command);
         this.databaseManager = databaseManager;
+        this.configManager = configManager;
     }
     // /-rep {target} {res}
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
             if ( args.length != 2) {
-                sender.sendMessage("ну коректно");
+                Component message = configManager.getMessage("no_correctly_command");
+                sender.sendMessage(message);
                 return true;
             } else if (!sender.hasPermission("trust.removerep")) {
-                sender.hasPermission("no have permission");
+                sender.sendMessage(configManager.getMessage("no_permission"));
                 return true;
             } else if (!(sender instanceof Player)) {
-                sender.sendMessage("only players command");
+                sender.sendMessage(configManager.getMessage("not_player"));
             }
+
             Player target = Bukkit.getPlayer(args[0]);
             Player actor = (Player) sender;
             if (target == null) return true;

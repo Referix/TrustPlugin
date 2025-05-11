@@ -1,5 +1,6 @@
 package org.referix.commands.command.utilcommand;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
+import org.referix.utils.ConfigManager;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,26 +19,27 @@ import java.util.UUID;
 
 public class TrustAccept extends AbstractCommand {
     private final DatabaseManager databaseManager;
+    private ConfigManager configManager;
 
-    public TrustAccept(String command, DatabaseManager databaseManager) {
+    public TrustAccept(String command, DatabaseManager databaseManager, ConfigManager configManager) {
         super(command);
         this.databaseManager = databaseManager;
+        this.configManager = configManager;
     }
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "Ця команда доступна лише гравцям.");
+            sender.sendMessage(configManager.getMessage("not_player"));
             return true;
         }
 
         if (!sender.hasPermission("trust.accept")) {
-            sender.sendMessage(ChatColor.RED + "У вас немає дозволу.");
+            sender.sendMessage(configManager.getMessage("no_permission"));
             return true;
         }
 
         if (args.length != 1) {
-            sender.sendMessage(ChatColor.RED + "Використання: /trustaccept {id}");
             return true;
         }
 
@@ -44,7 +47,7 @@ public class TrustAccept extends AbstractCommand {
 
         databaseManager.searchData(DatabaseTable.TRUST_CHANGES, "id = '" + id + "'", TrustChangeDB.class, changes -> {
             if (changes.isEmpty()) {
-                player.sendMessage(ChatColor.RED + "Запис з ID " + id + " не знайдено.");
+                player.sendMessage(ChatColor.RED + "Запис c ID " + id + " не найдено.");
                 return;
             }
 
@@ -77,10 +80,14 @@ public class TrustAccept extends AbstractCommand {
                     databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
 
                     String sign = delta >= 0 ? "+" : "-";
-                    player.sendMessage(ChatColor.GREEN + "Довіра гравця " +
-                            Bukkit.getOfflinePlayer(targetId).getName() +
-                            " змінена до " + (int) Math.floor(newTrust) +
-                            " (" + sign + String.format("%.2f", Math.abs(delta)) + ")");
+                    Component messageTemplate = configManager.getMessage(
+                            "trust_change_message",
+                            "player", Bukkit.getOfflinePlayer(targetId).getName(),
+                            "trust_level", String.valueOf((int) Math.floor(newTrust)),
+                            "sign", sign,
+                            "delta", String.format("%.2f", Math.abs(delta))
+                    );
+                    player.sendMessage(messageTemplate);
                 });
             });
         });
