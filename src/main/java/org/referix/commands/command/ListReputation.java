@@ -10,19 +10,19 @@ import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseManager;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 
 import java.util.Objects;
 import java.util.UUID;
 
 public class ListReputation extends AbstractCommand {
-    private final DatabaseManager databaseManager;
-    private ConfigManager configManager;
+    private DatabaseManager databaseManager;
 
-    public ListReputation(String command, DatabaseManager databaseManager, ConfigManager configManager) {
+
+    public ListReputation(String command, DatabaseManager databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
-        this.configManager = configManager;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ListReputation extends AbstractCommand {
 
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(configManager.getMessage("not_player"));
+                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
                 return true;
             }
             targetId = ((Player) sender).getUniqueId().toString();
@@ -41,14 +41,14 @@ public class ListReputation extends AbstractCommand {
                 try {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(configManager.getMessage("page_should_be_number"));
+                    sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
                     return true;
                 }
             }
         } else {
             Player target = Bukkit.getPlayerExact(args[0]);
             if (target == null) {
-                sender.sendMessage(configManager.getMessage("player_not_found"));
+                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("player_not_found"));
                 return true;
             }
             targetId = target.getUniqueId().toString();
@@ -56,7 +56,7 @@ public class ListReputation extends AbstractCommand {
                 try {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(configManager.getMessage("page_should_be_number"));
+                    sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
                     return true;
                 }
             }
@@ -82,10 +82,10 @@ public class ListReputation extends AbstractCommand {
             Object[] params = {limit, limit * (currentPage - 1)};
             databaseManager.searchDataRaw(sql, params, TrustChangeDB.class, list -> {
                 if (list.isEmpty()) {
-                    sender.sendMessage(configManager.getMessage("reputation_not_found"));
+                    sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("reputation_not_found"));
                     return;
                 }
-                Component title = configManager.getMessage("reputations_for_all", "page", String.valueOf(currentPage));
+                Component title = TrustPlugin.getInstance().getConfigManager().getMessage("reputations_for_all", "page", String.valueOf(currentPage));
                 sender.sendMessage(title);
 
                 for (TrustChangeDB entry : list) {
@@ -134,7 +134,7 @@ public class ListReputation extends AbstractCommand {
                     sender.sendMessage("§7Записів не знайдено.");
                     return;
                 }
-                Component title = configManager.getMessage("reputations_for_player", "page", String.valueOf(currentPage),
+                Component title = TrustPlugin.getInstance().getConfigManager().getMessage("reputations_for_player", "page", String.valueOf(currentPage),
                         "player", Objects.requireNonNull(Bukkit.getOfflinePlayer(UUID.fromString(playerId))).getName());
                 sender.sendMessage(title);
                 for (TrustChangeDB entry : list) {

@@ -3,6 +3,10 @@ version: '1.0-SNAPSHOT'
 main: org.referix.trustPlugin.TrustPlugin
 api-version: '1.21'
 commands:
+  trust:
+    usage: /<command>
+    description: add reputation
+    permission: trust.reload
   addrep:
     usage: /<command>
     description: add reputation

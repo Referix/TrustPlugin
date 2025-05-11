@@ -8,6 +8,7 @@ import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 
 import java.util.List;
@@ -15,26 +16,25 @@ import java.util.stream.Collectors;
 
 public class RemoveReputation extends AbstractCommand {
 
-    private final DatabaseManager databaseManager;
-    private ConfigManager configManager;
+    private DatabaseManager databaseManager;
 
-    public RemoveReputation(String command, DatabaseManager databaseManager, ConfigManager configManager) {
+
+    public RemoveReputation(String command, DatabaseManager databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
-        this.configManager = configManager;
     }
     // /-rep {target} {res}
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
             if ( args.length != 2) {
-                Component message = configManager.getMessage("no_correctly_command");
+                Component message = TrustPlugin.getInstance().getConfigManager().getMessage("no_correctly_command");
                 sender.sendMessage(message);
                 return true;
             } else if (!sender.hasPermission("trust.removerep")) {
-                sender.sendMessage(configManager.getMessage("no_permission"));
+                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
                 return true;
             } else if (!(sender instanceof Player)) {
-                sender.sendMessage(configManager.getMessage("not_player"));
+                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
             }
 
             Player target = Bukkit.getPlayer(args[0]);

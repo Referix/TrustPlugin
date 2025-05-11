@@ -17,26 +17,24 @@ import java.util.stream.Collectors;
 
 public class AddReputation extends AbstractCommand {
 
-    private final DatabaseManager databaseManager;
-    private ConfigManager configManager;
+    private DatabaseManager databaseManager;
 
-    public AddReputation(String command, DatabaseManager databaseManager, ConfigManager configManager) {
+    public AddReputation(String command, DatabaseManager databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
-        this.configManager = configManager;
     }
     // /+rep {target} {res}
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
         if ( args.length != 2) {
-            Component message = configManager.getMessage("no_correctly_command");
+            Component message = TrustPlugin.getInstance().getConfigManager().getMessage("no_correctly_command");
             sender.sendMessage(message);
             return true;
         } else if (!sender.hasPermission("trust.addrep")) {
-            sender.sendMessage(configManager.getMessage("no_permission"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
             return true;
         } else if (!(sender instanceof Player)) {
-            sender.sendMessage(configManager.getMessage("not_player"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
         }
         Player target = Bukkit.getPlayer(args[0]);
         Player actor = (Player) sender;

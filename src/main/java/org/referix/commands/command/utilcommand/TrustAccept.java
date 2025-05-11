@@ -20,25 +20,23 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class TrustAccept extends AbstractCommand {
-    private final DatabaseManager databaseManager;
-    private ConfigManager configManager;
+    private DatabaseManager databaseManager;
     private PlayerDataCache playerDataCache;
-    public TrustAccept(String command, DatabaseManager databaseManager, ConfigManager configManager, PlayerDataCache playerDataCache) {
+    public TrustAccept(String command, DatabaseManager databaseManager, PlayerDataCache playerDataCache) {
         super(command);
         this.databaseManager = databaseManager;
-        this.configManager = configManager;
         this.playerDataCache = playerDataCache;
     }
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(configManager.getMessage("not_player"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
             return true;
         }
 
         if (!sender.hasPermission("trust.accept")) {
-            sender.sendMessage(configManager.getMessage("no_permission"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
             return true;
         }
 
@@ -65,20 +63,20 @@ public class TrustAccept extends AbstractCommand {
                 databaseManager.searchData(DatabaseTable.PLAYER_TRUSTS, "player_id = '" + actorId + "'", PlayerTrustDB.class, actorList -> {
                     double trustedPlayerTrust = actorList.isEmpty() ? 0 : actorList.getFirst().getScore();
 
-                    double baseTrust = configManager.getBaseTrust();
-                    double baseUntrust = configManager.getBaseUntrust();
+                    double baseTrust = TrustPlugin.getInstance().getConfigManager().getBaseTrust();
+                    double baseUntrust = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();
 
                     double delta;
 
                     if (rawChange > 0) {
-                        delta = baseTrust + (0.1 * trustedPlayerTrust + 0.01) / (1 + playerTrust * 0.01);
+                        delta = baseTrust + (0.1 * trustedPlayerTrust + 0.01) / (1 + Math.abs(playerTrust) * 0.01);
                     } else {
-                        delta = baseUntrust - (0.1 * trustedPlayerTrust + 0.01) / (1 + playerTrust * 0.01);
+                        delta = baseUntrust - (0.1 * trustedPlayerTrust + 0.01) / (1 + Math.abs(playerTrust) * 0.01);
                     }
 
                     double newTrust = playerTrust + delta;
-                    double firstLineScore = configManager.getFirstLineScore();
-                    double secondLineScore = configManager.getSecondLineScore();
+                    double firstLineScore = TrustPlugin.getInstance().getConfigManager().getFirstLineScore();
+                    double secondLineScore = TrustPlugin.getInstance().getConfigManager().getSecondLineScore();
                     System.out.println(firstLineScore + " " + secondLineScore + " " + newTrust);
 
                     databaseManager.updatePlayerTrust(targetId, newTrust);
@@ -88,17 +86,17 @@ public class TrustAccept extends AbstractCommand {
                     String sign = delta >= 0 ? "+" : "-";
                     if (newTrust < firstLineScore && newTrust > secondLineScore){
                         System.out.println("first line");
-                        Component messageTemplate = configManager.getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                        Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
                         String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
                         TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                     }
                     if (newTrust < secondLineScore){
                         System.out.println("second line");
-                        Component messageTemplate = configManager.getMessage("second_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                        Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("second_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
                         String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
                         TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                     }
-                    Component messageTemplate = configManager.getMessage(
+                    Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage(
                             "trust_change_message",
                             "player", Bukkit.getOfflinePlayer(targetId).getName(),
                             "trust_level", String.valueOf((int) Math.floor(newTrust)),

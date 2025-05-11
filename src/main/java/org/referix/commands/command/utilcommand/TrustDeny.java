@@ -9,26 +9,25 @@ import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseManager;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 
 public class TrustDeny extends AbstractCommand {
-    private final DatabaseManager databaseManager;
-    private ConfigManager configManager;
-    public TrustDeny(String command, DatabaseManager databaseManager, ConfigManager configManager) {
+    private DatabaseManager databaseManager;
+    public TrustDeny(String command, DatabaseManager databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
-        this.configManager = configManager;
     }
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(configManager.getMessage("not_player"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
             return true;
         }
 
         if (!sender.hasPermission("trust.accept")) {
-            sender.sendMessage(configManager.getMessage("no_permission"));
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
             return true;
         }
 
