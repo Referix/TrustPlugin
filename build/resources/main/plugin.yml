@@ -1,0 +1,20 @@
+name: TrustPlugin
+version: '1.0-SNAPSHOT'
+main: org.referix.trustPlugin.TrustPlugin
+api-version: '1.21'
+commands:
+  addrep:
+    usage: /<command>
+    description: add reputation
+    permission: trust.addreputation
+    alias:
+      - trust
+  removerep:
+    usage: /<command>
+    description: remove reputation
+    permission: trust.removereputation
+    alias:
+      - untrust
+  listrep:
+    description: Показує історію змін репутації
+    usage: /listrep [all|<гравець>] [сторінка]
