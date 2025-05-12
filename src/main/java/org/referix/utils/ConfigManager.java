@@ -29,6 +29,10 @@ public class ConfigManager {
         return config.getDouble("setting.second_line.score");
     }
 
+    public double getTrustLineScore() {
+        return config.getDouble("setting.trust_player");
+    }
+
     public ConfigManager(TrustPlugin plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();

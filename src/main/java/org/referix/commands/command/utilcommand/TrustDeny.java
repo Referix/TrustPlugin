@@ -2,6 +2,7 @@ package org.referix.commands.command.utilcommand;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,12 +12,18 @@ import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
+import org.referix.utils.FileLogger;
+
+import java.util.Objects;
 
 public class TrustDeny extends AbstractCommand {
     private DatabaseManager databaseManager;
-    public TrustDeny(String command, DatabaseManager databaseManager) {
+    private FileLogger fileLogger;
+
+    public TrustDeny(String command, DatabaseManager databaseManager, FileLogger fileLogger) {
         super(command);
         this.databaseManager = databaseManager;
+        this.fileLogger = fileLogger;
     }
 
     @Override
@@ -44,6 +51,16 @@ public class TrustDeny extends AbstractCommand {
             }
             databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
             player.sendMessage(Component.text("Запис с ID:" + id + " удалено!").color(TextColor.color(0, 255, 0)));
+            fileLogger.logReputationChange(
+                    Objects.requireNonNull(Bukkit.getOfflinePlayer(changes.getFirst().getActor_id()).getName()),
+                    null,
+                    Objects.requireNonNull(Bukkit.getOfflinePlayer(changes.getFirst().getTarget_id()).getName()),
+                    null,
+                    null,
+                    changes.getFirst().getReason(),
+                    false,
+                    true
+            );
         });
         return false;
     }

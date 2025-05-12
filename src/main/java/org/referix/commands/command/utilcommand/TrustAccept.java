@@ -13,6 +13,8 @@ import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
+import org.referix.utils.FileLogger;
+import org.referix.utils.PermissionUtil;
 import org.referix.utils.PlayerDataCache;
 
 import java.util.List;
@@ -22,10 +24,13 @@ import java.util.UUID;
 public class TrustAccept extends AbstractCommand {
     private DatabaseManager databaseManager;
     private PlayerDataCache playerDataCache;
-    public TrustAccept(String command, DatabaseManager databaseManager, PlayerDataCache playerDataCache) {
+    private FileLogger fileLogger;
+
+    public TrustAccept(String command, DatabaseManager databaseManager, PlayerDataCache playerDataCache, FileLogger fileLogger) {
         super(command);
         this.databaseManager = databaseManager;
         this.playerDataCache = playerDataCache;
+        this.fileLogger = fileLogger;
     }
 
     @Override
@@ -65,6 +70,7 @@ public class TrustAccept extends AbstractCommand {
 
                     double baseTrust = TrustPlugin.getInstance().getConfigManager().getBaseTrust();
                     double baseUntrust = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();
+                    double getPermToTrust = TrustPlugin.getInstance().getConfigManager().getTrustLineScore();
 
                     double delta;
 
@@ -96,6 +102,29 @@ public class TrustAccept extends AbstractCommand {
                         String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
                         TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                     }
+
+                    if (newTrust < getPermToTrust) {
+                        PermissionUtil.hasPermission(targetId, "trust.addreputation").thenAccept(has -> {
+                            if (has) {
+                                System.out.println("remove reputation permission");
+                                PermissionUtil.removePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
+                                    return PermissionUtil.removePermission(targetId, "trust.removereputation");
+                                });
+                            }
+                        });
+                    }
+
+                    if (newTrust >= getPermToTrust) {
+                        PermissionUtil.hasPermission(targetId, "trust.addreputation").thenAccept(has -> {
+                            if (!has) {
+                                System.out.println("add reputation permission");
+                                PermissionUtil.givePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
+                                    return PermissionUtil.givePermission(targetId, "trust.removereputation");
+                                });
+                            }
+                        });
+                    }
+
                     Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage(
                             "trust_change_message",
                             "player", Bukkit.getOfflinePlayer(targetId).getName(),
@@ -104,6 +133,17 @@ public class TrustAccept extends AbstractCommand {
                             "delta", String.format("%.2f", Math.abs(delta))
                     );
                     playerDataCache.set(targetId, String.valueOf(Math.floor(newTrust)));
+                    fileLogger.logReputationChange(
+                            Objects.requireNonNull(Bukkit.getOfflinePlayer(actorId).getName()),
+                            Math.abs(actorList.getFirst().getScore()),
+                            Objects.requireNonNull(Bukkit.getOfflinePlayer(targetId).getName()),
+                            targetList.getFirst().getScore(),
+                            delta,
+                            changes.getFirst().getReason(),
+                            true,
+                            false
+                    );
+
 
                     player.sendMessage(messageTemplate);
                 });
