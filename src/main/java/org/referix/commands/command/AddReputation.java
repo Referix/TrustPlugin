@@ -5,7 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
-import org.referix.database.DatabaseManager;
+import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 
 public class AddReputation extends AbstractCommand {
 
-    private DatabaseManager databaseManager;
+    private DatabaseProvider databaseManager;
 
-    public AddReputation(String command, DatabaseManager databaseManager) {
+    public AddReputation(String command, DatabaseProvider databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
     }

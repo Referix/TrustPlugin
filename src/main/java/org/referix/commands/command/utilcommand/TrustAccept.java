@@ -7,7 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
-import org.referix.database.DatabaseManager;
+import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
@@ -22,11 +22,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class TrustAccept extends AbstractCommand {
-    private DatabaseManager databaseManager;
+    private DatabaseProvider databaseManager;
     private PlayerDataCache playerDataCache;
     private FileLogger fileLogger;
 
-    public TrustAccept(String command, DatabaseManager databaseManager, PlayerDataCache playerDataCache, FileLogger fileLogger) {
+    public TrustAccept(String command, DatabaseProvider databaseManager, PlayerDataCache playerDataCache, FileLogger fileLogger) {
         super(command);
         this.databaseManager = databaseManager;
         this.playerDataCache = playerDataCache;

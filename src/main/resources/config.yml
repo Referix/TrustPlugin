@@ -27,4 +27,17 @@ setting:
       score: 10
       command: "ban {player}"
 
+database:
+  type: "sqlite"  # або "mysql"
+
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "trust"
+    user: "root"
+    password: "password"
+
+  sqlite:
+    file: "data.db"
+
 save-zone:

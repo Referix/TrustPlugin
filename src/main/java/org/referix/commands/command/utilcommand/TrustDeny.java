@@ -7,7 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
-import org.referix.database.DatabaseManager;
+import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
@@ -17,10 +17,10 @@ import org.referix.utils.FileLogger;
 import java.util.Objects;
 
 public class TrustDeny extends AbstractCommand {
-    private DatabaseManager databaseManager;
+    private DatabaseProvider databaseManager;
     private FileLogger fileLogger;
 
-    public TrustDeny(String command, DatabaseManager databaseManager, FileLogger fileLogger) {
+    public TrustDeny(String command, DatabaseProvider databaseManager, FileLogger fileLogger) {
         super(command);
         this.databaseManager = databaseManager;
         this.fileLogger = fileLogger;

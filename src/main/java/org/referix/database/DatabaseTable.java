@@ -1,20 +1,23 @@
 package org.referix.database;
 
+import org.referix.trustPlugin.TrustPlugin;
+import org.bukkit.configuration.file.FileConfiguration;
+
 public enum DatabaseTable {
 
     PLAYER_TRUSTS(
             "player_trusts",
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, score REAL"
+            "id {ID_TYPE}, `player_id` CHAR(36) NOT NULL, `score` DOUBLE NOT NULL"
     ),
 
     TRUST_CHANGES(
             "trust_changes",
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "target_id TEXT NOT NULL, " +
-                    "actor_id TEXT NOT NULL, " +
-                    "change REAL NOT NULL, " +
-                    "reason TEXT, " +
-                    "timestamp INTEGER NOT NULL"
+            "id {ID_TYPE}, " +
+                    "`target_id` CHAR(36) NOT NULL, " +
+                    "`actor_id` CHAR(36) NOT NULL, " +
+                    "`change` DOUBLE NOT NULL, " +
+                    "`reason` TEXT, " +
+                    "`timestamp` BIGINT NOT NULL"
     );
 
     private final String tableName;
@@ -30,6 +33,16 @@ public enum DatabaseTable {
     }
 
     public String getColumns() {
-        return columns;
+        FileConfiguration cfg = TrustPlugin.getInstance().getConfig();
+        boolean isMySQL = "mysql".equalsIgnoreCase(cfg.getString("database.type", "sqlite"));
+        String idType = isMySQL
+                ? "INT PRIMARY KEY AUTO_INCREMENT"
+                : "INTEGER PRIMARY KEY AUTOINCREMENT";
+        String cols = columns.replace("{ID_TYPE}", idType);
+        // для SQLite прибираємо зворотні лапки
+        if (!isMySQL) {
+            cols = cols.replace("`", "");
+        }
+        return cols;
     }
 }

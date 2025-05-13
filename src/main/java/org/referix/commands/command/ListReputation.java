@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
-import org.referix.database.DatabaseManager;
+import org.referix.database.DatabaseProvider;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
@@ -17,10 +17,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class ListReputation extends AbstractCommand {
-    private DatabaseManager databaseManager;
+    private DatabaseProvider databaseManager;
 
 
-    public ListReputation(String command, DatabaseManager databaseManager) {
+    public ListReputation(String command, DatabaseProvider databaseManager) {
         super(command);
         this.databaseManager = databaseManager;
     }

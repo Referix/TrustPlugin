@@ -2,22 +2,19 @@ package org.referix.database;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.referix.trustPlugin.TrustPlugin;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
-public class DatabaseManager {
+public class SQLiteDatabaseProvider implements DatabaseProvider {
     private Connection connection;
 
-    public DatabaseManager(String dbPath) {
+    public SQLiteDatabaseProvider(String dbPath) {
         try {
             Class.forName("org.sqlite.JDBC");
 
@@ -33,6 +30,12 @@ public class DatabaseManager {
         }
     }
 
+    @Override
+    public void connect() {
+        // SQLite не потребує окремого підключення після конструктора
+    }
+
+    @Override
     public void createTable(DatabaseTable table) {
         new BukkitRunnable() {
             @Override
@@ -46,6 +49,7 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    @Override
     public <T> void insertDataAsync(DatabaseTable table, T object) {
         new BukkitRunnable() {
             @Override
@@ -60,36 +64,28 @@ public class DatabaseManager {
 
                     for (Field field : fields) {
                         field.setAccessible(true);
-                        if ("id".equals(field.getName())) {
-                            continue;
-                        }
-                        // Ігноруємо поле log_timestamp
-                        if ("log_timestamp".equals(field.getName())) {
-                            continue;  // Пропускаємо це поле
-                        }
+                        if ("id".equals(field.getName()) || "log_timestamp".equals(field.getName())) continue;
+
                         columns.append(field.getName()).append(",");
                         placeholders.append("?,");
 
                         if (field.getType() == Timestamp.class) {
-                            values.add(new Timestamp(System.currentTimeMillis())); // Записуємо поточний час, якщо поле - це Timestamp
-                        }
-                        if (field.getType() == Location.class) {
+                            values.add(new Timestamp(System.currentTimeMillis()));
+                        } else if (field.getType() == Location.class) {
                             Location location = (Location) field.get(object);
                             if (location != null) {
-                                // Форматування Location в строку (тільки координати та світ)
                                 String locationString = location.getWorld().getName() + ":" + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
-                                values.add(locationString);  // Додаємо рядок, що представляє локацію
+                                values.add(locationString);
                             } else {
-                                values.add(null); // Якщо Location == null, додаємо null
+                                values.add(null);
                             }
-                        }
-                        else {
+                        } else {
                             values.add(field.get(object));
                         }
                     }
 
-                    columns.setLength(columns.length() - 1); // Видалення останньої коми
-                    placeholders.setLength(placeholders.length() - 1); // Видалення останньої коми
+                    columns.setLength(columns.length() - 1);
+                    placeholders.setLength(placeholders.length() - 1);
 
                     String sql = "INSERT INTO " + table.getTableName() + " (" + columns + ") VALUES (" + placeholders + ")";
                     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -102,9 +98,10 @@ public class DatabaseManager {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(TrustPlugin.getInstance()); // Запуск асинхронного потоку
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    @Override
     public void updatePlayerTrust(UUID playerId, double newTrust) {
         new BukkitRunnable() {
             @Override
@@ -121,16 +118,15 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
-
-
+    @Override
     public <T> void searchData(DatabaseTable table, String condition, Class<T> clazz, Consumer<List<T>> callback) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 List<T> results = new ArrayList<>();
-                try (Statement stmt = connection.createStatement();
-                     ResultSet rs = stmt.executeQuery("SELECT * FROM " + table.getTableName() + (condition != null ? " WHERE " + condition : ""))) {
+                String sql = "SELECT * FROM " + table.getTableName() + (condition != null ? " WHERE " + condition : "");
 
+                try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
                     Field[] fields = clazz.getDeclaredFields();
 
                     while (rs.next()) {
@@ -138,28 +134,15 @@ public class DatabaseManager {
                         for (Field field : fields) {
                             field.setAccessible(true);
                             try {
-                                if (field.getType() == Timestamp.class) {
-                                    // Якщо поле є типом Timestamp, конвертуємо рядок в Timestamp
-                                    String timestampString = rs.getString(field.getName());
-                                    if (timestampString != null) {
-                                        field.set(obj, Timestamp.valueOf(timestampString));
-                                    }
+                                Object value = rs.getObject(field.getName());
+                                if (field.getType() == Timestamp.class && value instanceof String) {
+                                    field.set(obj, Timestamp.valueOf((String) value));
+                                } else if (field.getType() == UUID.class && value instanceof String) {
+                                    field.set(obj, UUID.fromString((String) value));
+                                } else {
+                                    field.set(obj, value);
                                 }
-                                else if (field.getType() == UUID.class) {
-                                    String uuidString = rs.getString(field.getName());
-                                    if (uuidString != null) {
-                                        field.set(obj, UUID.fromString(uuidString));
-                                    }
-                                }
-                                else {
-
-                                        // Для всіх інших типів
-                                        field.set(obj, rs.getObject(field.getName()));
-                                    }
-                            } catch (SQLException e) {
-                                System.err.println("Поле " + field.getName() + " не знайдено в результаті запиту.");
-                            } catch (IllegalArgumentException e) {
-                                System.err.println("Помилка при встановленні значення для поля " + field.getName());
+                            } catch (SQLException | IllegalArgumentException ignored) {
                             }
                         }
                         results.add(obj);
@@ -167,14 +150,13 @@ public class DatabaseManager {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.accept(results));
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
-
-
-
+    @Override
     public <T> void searchDataRaw(String sql, Object[] params, Class<T> clazz, Consumer<List<T>> callback) {
         new BukkitRunnable() {
             @Override
@@ -193,25 +175,15 @@ public class DatabaseManager {
                         for (Field field : fields) {
                             field.setAccessible(true);
                             try {
-                                if (field.getType() == Timestamp.class) {
-                                    String timestampString = rs.getString(field.getName());
-                                    if (timestampString != null) {
-                                        field.set(obj, Timestamp.valueOf(timestampString));
-                                    }
+                                Object value = rs.getObject(field.getName());
+                                if (field.getType() == Timestamp.class && value instanceof String) {
+                                    field.set(obj, Timestamp.valueOf((String) value));
+                                } else if (field.getType() == UUID.class && value instanceof String) {
+                                    field.set(obj, UUID.fromString((String) value));
+                                } else {
+                                    field.set(obj, value);
                                 }
-                                else if (field.getType() == UUID.class) {
-                                    String uuidString = rs.getString(field.getName());
-                                    if (uuidString != null) {
-                                        field.set(obj, UUID.fromString(uuidString));
-                                    }
-                                }
-                                else {
-                                    field.set(obj, rs.getObject(field.getName()));
-                                }
-                            } catch (SQLException e) {
-                                System.err.println("Поле " + field.getName() + " не знайдено в результаті запиту.");
-                            } catch (IllegalArgumentException e) {
-                                System.err.println("Помилка при встановленні значення для поля " + field.getName());
+                            } catch (SQLException | IllegalArgumentException ignored) {
                             }
                         }
                         results.add(obj);
@@ -219,11 +191,13 @@ public class DatabaseManager {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.accept(results));
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    @Override
     public void countRows(String sql, Consumer<Integer> callback) {
         new BukkitRunnable() {
             @Override
@@ -231,11 +205,9 @@ public class DatabaseManager {
                 int count = 0;
                 try (PreparedStatement stmt = connection.prepareStatement(sql);
                      ResultSet rs = stmt.executeQuery()) {
-
                     if (rs.next()) {
                         count = rs.getInt(1);
                     }
-
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -246,6 +218,7 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    @Override
     public void countRows(String sql, Object[] params, Consumer<Integer> callback) {
         new BukkitRunnable() {
             @Override
@@ -261,7 +234,6 @@ public class DatabaseManager {
                             count = rs.getInt(1);
                         }
                     }
-
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -272,6 +244,7 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+    @Override
     public void deleteById(DatabaseTable table, Object id) {
         new BukkitRunnable() {
             @Override
@@ -287,7 +260,7 @@ public class DatabaseManager {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
-
+    @Override
     public void close() {
         if (connection != null) {
             try {
@@ -297,5 +270,4 @@ public class DatabaseManager {
             }
         }
     }
-
 }
