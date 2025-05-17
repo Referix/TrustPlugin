@@ -11,15 +11,14 @@ import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
+import org.referix.event.ReputationListener;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 import org.referix.utils.FileLogger;
 import org.referix.utils.PermissionUtil;
 import org.referix.utils.PlayerDataCache;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class TrustAccept extends AbstractCommand {
     private DatabaseProvider databaseManager;
@@ -90,11 +89,14 @@ public class TrustAccept extends AbstractCommand {
                     databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
 
                     String sign = delta >= 0 ? "+" : "-";
+                    // fix this проблема в тому що виконуватиметься
+                    // кожного разу як тільки гравець потрапляє в цю межу ( 95 -106 )
                     if (newTrust < firstLineScore && newTrust > secondLineScore){
                         System.out.println("first line");
                         Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
                         String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
-                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                        ReputationListener.sendToVelocity(player, targetId.toString() ,command);
+//                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                     }
                     if (newTrust < secondLineScore){
                         System.out.println("second line");
