@@ -34,15 +34,16 @@ jobs:
           default_version: '0.1.0'
           search_commit_body: true
           bump_version: true
-      #add perms
+
+      # 4. Дати дозвіл на виконання gradlew
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 4. Збірка Gradle
+      # 5. Збірка Gradle
       - name: Build with Gradle
         run: ./gradlew build
 
-      # 5. Перейменування JAR
+      # 6. Перейменування JAR
       - name: Rename jar
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -50,7 +51,7 @@ jobs:
           cp "$JAR_PATH" "TrustPlugin_V${VERSION}.jar"
         shell: bash
 
-      # 6. Створення тега вручну (бо реліз тригериться не на "release")
+      # 7. Створення тега вручну
       - name: Create Git Tag
         run: |
           git config user.name "github-actions"
@@ -60,12 +61,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. Створення GitHub релізу
+      # 8. Створення GitHub релізу
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Release v${{ steps.version.outputs.version }}
-          files: MyPlugin_V${{ steps.version.outputs.version }}.jar
+          files: TrustPlugin_V${{ steps.version.outputs.version }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
