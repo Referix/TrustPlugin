@@ -32,6 +32,7 @@ public final class TrustPlugin extends JavaPlugin {
         database.connect();
         database.createTable(DatabaseTable.PLAYER_TRUSTS);
         database.createTable(DatabaseTable.TRUST_CHANGES);
+        database.createTable(DatabaseTable.PLAYER_LINES);
         saveDefaultConfig();
         PermissionUtil.init();
         configManager = new ConfigManager(this);

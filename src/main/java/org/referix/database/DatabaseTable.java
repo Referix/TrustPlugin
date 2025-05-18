@@ -18,6 +18,11 @@ public enum DatabaseTable {
                     "`change` DOUBLE NOT NULL, " +
                     "`reason` TEXT, " +
                     "`timestamp` BIGINT NOT NULL"
+    ),
+
+    PLAYER_LINES(
+        "player_lines",
+                "id {ID_TYPE}, `player_id` CHAR(36) NOT NULL, `line` INT NOT NULL"
     );
 
     private final String tableName;

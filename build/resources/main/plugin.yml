@@ -2,7 +2,12 @@ name: TrustPlugin
 version: '1.0-SNAPSHOT'
 main: org.referix.trustPlugin.TrustPlugin
 api-version: '1.21'
+depend: [LuckPerms]
 commands:
+  trust:
+    usage: /<command>
+    description: add reputation
+    permission: trust.reload
   addrep:
     usage: /<command>
     description: add reputation
@@ -17,4 +22,13 @@ commands:
       - untrust
   listrep:
     description: Показує історію змін репутації
+    permission: trust.list
+    usage: /listrep [all|<гравець>] [сторінка]
+  trustaccept:
+    description: додати репутацію
+    permission: trust.accept
+    usage: /listrep [all|<гравець>] [сторінка]
+  trustdeny:
+    description: відмінити додавання цієї репутації
+    permission: trust.deny
     usage: /listrep [all|<гравець>] [сторінка]

@@ -101,6 +101,24 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
 
+
+    @Override
+    public void updatePlayerCommand(UUID playerId, int line){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "UPDATE player_lines SET line = ? WHERE player_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setInt(1, line);
+                    stmt.setString(2, playerId.toString());
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
     @Override
     public void updatePlayerTrust(UUID playerId, double newTrust) {
         new BukkitRunnable() {

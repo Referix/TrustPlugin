@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
+import org.referix.database.pojo.PlayerCommandDB;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.event.ReputationListener;
@@ -93,16 +94,29 @@ public class TrustAccept extends AbstractCommand {
                     // кожного разу як тільки гравець потрапляє в цю межу ( 95 -106 )
                     if (newTrust < firstLineScore && newTrust > secondLineScore){
                         System.out.println("first line");
-                        Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
-                        String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
-                        ReputationListener.sendToVelocity(player, targetId.toString() ,command);
-//                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                        databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
+                            if (lines.isEmpty()){
+                                databaseManager.insertDataAsync(DatabaseTable.PLAYER_LINES, new PlayerCommandDB(targetId,1));
+                                Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                                String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
+                                ReputationListener.sendToVelocity(player, targetId.toString() ,command);
+                                // двойное выполннния изза velocity
+                                TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                            }
+                        });
                     }
                     if (newTrust < secondLineScore){
                         System.out.println("second line");
-                        Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("second_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
-                        String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
-                        TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                        databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
+                            if (lines.getFirst().getLine() == 1 || lines.isEmpty()){
+                                databaseManager.updatePlayerCommand(targetId,2);
+                                Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("second_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
+                                String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
+                                ReputationListener.sendToVelocity(player, targetId.toString() ,command);
+
+                                TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                            }
+                        });
                     }
 
                     if (newTrust < getPermToTrust) {

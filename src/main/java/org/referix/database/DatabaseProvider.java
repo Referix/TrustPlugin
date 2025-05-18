@@ -1,6 +1,8 @@
 package org.referix.database;
 
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.List;
@@ -9,6 +11,7 @@ public interface DatabaseProvider {
     void connect();
     void close();
     void createTable(DatabaseTable table);
+    void updatePlayerCommand(UUID playerId, int line);
     <T> void insertDataAsync(DatabaseTable table, T object);
     void updatePlayerTrust(UUID playerId, double newTrust);
     <T> void searchData(DatabaseTable table, String condition, Class<T> clazz, Consumer<List<T>> callback);
