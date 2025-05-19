@@ -12,9 +12,11 @@ jobs:
       packages: write
 
     steps:
-      # 1. Клонування репозиторію
+      # 1. Клонування репозиторію з повною історією
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # 2. Встановлення JDK
       - name: Set up JDK 17
