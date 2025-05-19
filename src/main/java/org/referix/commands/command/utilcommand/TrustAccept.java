@@ -104,6 +104,11 @@ public class TrustAccept extends AbstractCommand {
                                 TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                             }
                         });
+                    } else if (newTrust > firstLineScore) {
+                        databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
+                            if (lines.isEmpty()) return;
+                            databaseManager.deleteById(DatabaseTable.PLAYER_LINES, lines.getFirst().getId());
+                        });
                     }
                     if (newTrust < secondLineScore){
                         System.out.println("second line");
@@ -117,6 +122,8 @@ public class TrustAccept extends AbstractCommand {
                                 TrustPlugin.getInstance().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
                             }
                         });
+                    } else if (newTrust > secondLineScore && newTrust < firstLineScore) {
+                        databaseManager.updatePlayerCommand(targetId,1);
                     }
 
                     if (newTrust < getPermToTrust) {

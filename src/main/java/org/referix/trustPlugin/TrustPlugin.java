@@ -15,6 +15,7 @@ import org.referix.database.DatabaseTable;
 import org.referix.event.ReputationListener;
 import org.referix.utils.*;
 
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public final class TrustPlugin extends JavaPlugin {
@@ -24,6 +25,8 @@ public final class TrustPlugin extends JavaPlugin {
     private PlayerDataCache playerDataCache;
     private ConfigManager configManager;
     private FileLogger logger;
+
+    private String serverID;
 
     @Override
     public void onEnable() {
@@ -36,6 +39,19 @@ public final class TrustPlugin extends JavaPlugin {
         saveDefaultConfig();
         PermissionUtil.init();
         configManager = new ConfigManager(this);
+        saveDefaultConfig(); // створює config.yml якщо немає
+
+        if (getConfig().contains("serverID")) {
+            // Зчитуємо з конфігу, якщо вже існує
+            serverID = getConfig().getString("serverID");
+        } else {
+            // Генеруємо новий UUID і записуємо у конфіг
+            serverID = UUID.randomUUID().toString();
+            getConfig().set("serverID", serverID);
+            saveConfig();
+        }
+
+        getLogger().info("ServerID: " + serverID);
         playerDataCache = new PlayerDataCache();
         logger = new FileLogger(this);
 
@@ -65,5 +81,9 @@ public final class TrustPlugin extends JavaPlugin {
 
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+
+    public String getServerID() {
+        return serverID;
     }
 }

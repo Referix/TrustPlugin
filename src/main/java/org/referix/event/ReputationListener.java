@@ -31,8 +31,13 @@ public class ReputationListener implements Listener, PluginMessageListener {
         ByteArrayDataInput in = ByteStreams.newDataInput(message);
 
         try {
+            String category = in.readUTF();
             String uuidString = in.readUTF();         // UUID гравця
             String command = in.readUTF();            // Команда (наприклад: "/ban Player")
+            if (category.equals(TrustPlugin.getInstance().getServerID())) {
+                plugin.getLogger().info("this server initial this message serverID = " + category);
+                return;
+            }
 
             plugin.getLogger().info("Received from Velocity: UUID=" + uuidString + ", Command=" + command);
 
@@ -49,6 +54,7 @@ public class ReputationListener implements Listener, PluginMessageListener {
 
     public static void sendToVelocity(Player player, String uuid, String command) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF(TrustPlugin.getInstance().getServerID());
         out.writeUTF(uuid);
         out.writeUTF(command);
 

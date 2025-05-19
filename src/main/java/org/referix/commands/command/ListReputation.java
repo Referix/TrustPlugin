@@ -3,7 +3,9 @@ package org.referix.commands.command;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -94,14 +96,17 @@ public class ListReputation extends AbstractCommand {
                     String targetName = Bukkit.getOfflinePlayer(entry.getTarget_id()).getName();
                     String reason = entry.getReason();
                     double change = entry.getChange();
-
+                    String firstWord = reason.split(" ")[0]; // перше слово з reason
                     TextComponent.Builder line = Component.text()
                             .append(Component.text("ID: " + id + " ", NamedTextColor.DARK_GRAY))
                             .append(Component.text(actorName, NamedTextColor.YELLOW))
                             .append(Component.text(" -> ", NamedTextColor.GRAY))
                             .append(Component.text(targetName, NamedTextColor.GREEN))
                             .append(Component.text(" (" + change + "): ", NamedTextColor.WHITE))
-                            .append(Component.text(reason, NamedTextColor.AQUA))
+                            .append(Component.text(firstWord, NamedTextColor.AQUA)
+                                    .append(Component.space())
+                                    .append(Component.text("[?]").color(TextColor.color(198, 153, 18)))
+                                    .hoverEvent(HoverEvent.showText(Component.text(reason)))) // повний текст у ховері
                             .append(Component.space())
                             .append(Component.text("[accept]", NamedTextColor.GREEN)
                                     .clickEvent(ClickEvent.runCommand("/trustaccept " + id)))
@@ -143,13 +148,17 @@ public class ListReputation extends AbstractCommand {
                     String targetName = Bukkit.getOfflinePlayer(entry.getTarget_id()).getName();
                     String reason = entry.getReason();
                     double change = entry.getChange();
+                    String firstWord = reason.split(" ")[0]; // перше слово з reason
                     TextComponent.Builder line = Component.text()
                             .append(Component.text("ID: " + id + " ", NamedTextColor.DARK_GRAY))
                             .append(Component.text(actorName, NamedTextColor.YELLOW))
                             .append(Component.text(" -> ", NamedTextColor.GRAY))
                             .append(Component.text(targetName, NamedTextColor.GREEN))
                             .append(Component.text(" (" + change + "): ", NamedTextColor.WHITE))
-                            .append(Component.text(reason, NamedTextColor.AQUA))
+                            .append(Component.text(firstWord, NamedTextColor.AQUA)
+                            .append(Component.space())
+                                    .append(Component.text("[?]").color(TextColor.color(198, 153, 18)))
+                                        .hoverEvent(HoverEvent.showText(Component.text(reason))))
                             .append(Component.space())
                             .append(Component.text("[accept]", NamedTextColor.GREEN)
                                     .clickEvent(ClickEvent.runCommand("/trustaccept " + id)))

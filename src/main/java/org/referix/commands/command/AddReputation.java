@@ -12,6 +12,7 @@ import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class AddReputation extends AbstractCommand {
     // /+rep {target} {res}
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
-        if ( args.length != 2) {
+        if ( args.length < 2) {
             Component message = TrustPlugin.getInstance().getConfigManager().getMessage("no_correctly_command");
             sender.sendMessage(message);
             return true;
@@ -39,8 +40,9 @@ public class AddReputation extends AbstractCommand {
         Player target = Bukkit.getPlayer(args[0]);
         Player actor = (Player) sender;
         if (target == null) return true;
+        String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-        TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), 10, args[1], System.currentTimeMillis());
+        TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), 10, combinedArgs, System.currentTimeMillis());
         databaseManager.insertDataAsync(DatabaseTable.TRUST_CHANGES, trustChangeDB);
 
 

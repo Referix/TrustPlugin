@@ -3,9 +3,10 @@ package org.referix.database.pojo;
 import java.util.UUID;
 
 public class PlayerCommandDB {
+    private int id;
+
     private UUID player_id;
     private int line;
-
     public PlayerCommandDB() {}
 
     public PlayerCommandDB(UUID playerId, int line) {
@@ -19,5 +20,9 @@ public class PlayerCommandDB {
 
     public UUID getPlayer_id() {
         return player_id;
+    }
+
+    public int getId() {
+        return id;
     }
 }
