@@ -2,6 +2,7 @@ package org.referix.database;
 
 
 import org.jetbrains.annotations.Nullable;
+import org.referix.database.pojo.SafeZoneDB;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -19,5 +20,6 @@ public interface DatabaseProvider {
     void countRows(String sql, Consumer<Integer> callback);
     void countRows(String sql, Object[] params, Consumer<Integer> callback);
     void deleteById(DatabaseTable table, Object id);
+    void updateSafeZone(SafeZoneDB safeZone);
 }
 

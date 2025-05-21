@@ -23,7 +23,20 @@ public enum DatabaseTable {
     PLAYER_LINES(
         "player_lines",
                 "id {ID_TYPE}, `player_id` CHAR(36) NOT NULL, `line` INT NOT NULL"
+    ),
+
+    SAFE_ZONE(
+            "safe_zone",
+            "id {ID_TYPE}, " +
+                    "`server_id` VARCHAR(64) NOT NULL, " +
+                    "`player_id` CHAR(36) NOT NULL, " +
+                    "`start_chunk_x` INT NOT NULL, " +
+                    "`end_chunk_x` INT NOT NULL, " +
+                    "`start_chunk_z` INT NOT NULL, " +
+                    "`end_chunk_z` INT NOT NULL"
     );
+
+
 
     private final String tableName;
     private final String columns;

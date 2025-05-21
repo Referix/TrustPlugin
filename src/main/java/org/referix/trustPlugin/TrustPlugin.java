@@ -12,7 +12,9 @@ import org.referix.commands.command.utilcommand.TrustDeny;
 import org.referix.database.DatabaseFactory;
 import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
+import org.referix.database.pojo.SafeZoneDB;
 import org.referix.event.ReputationListener;
+import org.referix.savezone.SafeZoneManager;
 import org.referix.utils.*;
 
 import java.util.UUID;
@@ -28,6 +30,8 @@ public final class TrustPlugin extends JavaPlugin {
 
     private String serverID;
 
+    private SafeZoneManager safeZoneManager;
+
     @Override
     public void onEnable() {
         plugin = this;
@@ -36,22 +40,12 @@ public final class TrustPlugin extends JavaPlugin {
         database.createTable(DatabaseTable.PLAYER_TRUSTS);
         database.createTable(DatabaseTable.TRUST_CHANGES);
         database.createTable(DatabaseTable.PLAYER_LINES);
-        saveDefaultConfig();
+        database.createTable(DatabaseTable.SAFE_ZONE);
         PermissionUtil.init();
         configManager = new ConfigManager(this);
-        saveDefaultConfig(); // створює config.yml якщо немає
 
-        if (getConfig().contains("serverID")) {
-            // Зчитуємо з конфігу, якщо вже існує
-            serverID = getConfig().getString("serverID");
-        } else {
-            // Генеруємо новий UUID і записуємо у конфіг
-            serverID = UUID.randomUUID().toString();
-            getConfig().set("serverID", serverID);
-            saveConfig();
-        }
+        safeZoneManager = new SafeZoneManager(database, configManager);
 
-        getLogger().info("ServerID: " + serverID);
         playerDataCache = new PlayerDataCache();
         logger = new FileLogger(this);
 
@@ -68,6 +62,7 @@ public final class TrustPlugin extends JavaPlugin {
         new PlayerTrustPlaceholders(this, playerDataCache).register();
         ReputationListener listener = new ReputationListener(this);
         Bukkit.getPluginManager().registerEvents(listener, this);
+
     }
 
     @Override
@@ -85,5 +80,9 @@ public final class TrustPlugin extends JavaPlugin {
 
     public String getServerID() {
         return serverID;
+    }
+
+    public void setServerID(String serverID) {
+        this.serverID = serverID;
     }
 }

@@ -3,6 +3,7 @@ package org.referix.database;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.referix.database.pojo.SafeZoneDB;
 import org.referix.trustPlugin.TrustPlugin;
 
 import java.io.File;
@@ -95,6 +96,28 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
                         pstmt.executeUpdate();
                     }
                 } catch (SQLException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+    @Override
+    public void updateSafeZone(SafeZoneDB safeZone) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "UPDATE safe_zone SET server_id = ?, player_id = ?, start_chunk_x = ?, end_chunk_x = ?, start_chunk_z = ?, end_chunk_z = ? WHERE id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setString(1, safeZone.server_id);
+                    stmt.setString(2, safeZone.player_id);
+                    stmt.setInt(3, safeZone.start_chunk_x);
+                    stmt.setInt(4, safeZone.end_chunk_x);
+                    stmt.setInt(5, safeZone.start_chunk_z);
+                    stmt.setInt(6, safeZone.end_chunk_z);
+                    stmt.setInt(7, safeZone.id);
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

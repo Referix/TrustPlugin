@@ -27,6 +27,18 @@ setting:
       score: 10
       command: "ban {player}"
 
+save_zone:
+  #дефолтна сейв зона
+  default_zone:
+
+    #початкова точка ( не координати а чанк)
+    start_chunk_x: 10
+    end_chunk_x: 10
+
+    #кінцева точка ( не координати а чанк)
+    start_chunk_z: -10
+    end_chunk_z: -10
+
 database:
   type: "sqlite"  # або "mysql"
 
@@ -39,5 +51,3 @@ database:
 
   sqlite:
     file: "data.db"
-
-save-zone:
