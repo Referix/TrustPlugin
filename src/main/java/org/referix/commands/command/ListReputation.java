@@ -31,7 +31,10 @@ public class ListReputation extends AbstractCommand {
     public boolean execute(CommandSender sender, String label, String[] args) {
         int page = 1;
         String targetId = null;
-
+        if (!sender.hasPermission("trust.list")) {
+            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
+            return true;
+        }
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
@@ -102,7 +105,7 @@ public class ListReputation extends AbstractCommand {
                             .append(Component.text(actorName, NamedTextColor.YELLOW))
                             .append(Component.text(" -> ", NamedTextColor.GRAY))
                             .append(Component.text(targetName, NamedTextColor.GREEN))
-                            .append(Component.text(" (" + change + "): ", NamedTextColor.WHITE))
+                            .append(getSignDescription(change))
                             .append(Component.text(firstWord, NamedTextColor.AQUA)
                                     .append(Component.space())
                                     .append(Component.text("[?]").color(TextColor.color(198, 153, 18)))
@@ -122,6 +125,14 @@ public class ListReputation extends AbstractCommand {
                 sendPageControls(sender, currentPage, totalPages, "/listrep all");
             });
         });
+    }
+    public Component getSignDescription(double change) {
+        if (change > 0) {
+            return Component.text(" (+) ", NamedTextColor.GREEN);
+        } else if (change < 0) {
+            return Component.text(" (-) ", NamedTextColor.RED);
+        }
+        return Component.text("0", NamedTextColor.GRAY);
     }
 
     private void listPlayerReputation(CommandSender sender, String playerId, int page) {
@@ -154,7 +165,7 @@ public class ListReputation extends AbstractCommand {
                             .append(Component.text(actorName, NamedTextColor.YELLOW))
                             .append(Component.text(" -> ", NamedTextColor.GRAY))
                             .append(Component.text(targetName, NamedTextColor.GREEN))
-                            .append(Component.text(" (" + change + "): ", NamedTextColor.WHITE))
+                            .append(getSignDescription(change))
                             .append(Component.text(firstWord, NamedTextColor.AQUA)
                             .append(Component.space())
                                     .append(Component.text("[?]").color(TextColor.color(198, 153, 18)))

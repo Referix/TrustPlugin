@@ -39,8 +39,12 @@ public class ConfigManager {
                 config.set("messages.page_should_be_number", "Сторінка повинна бути числом.");
                 config.set("messages.trust_change_message", "<#00ff00>Довіра гравця {player} змінена до {trust_level} ({sign}{delta})");
 
+                config.set("setting.default_trust_first_join",50);
+                config.set("setting.trust_add_hour",1);
                 config.set("setting.base_trust", 1);
                 config.set("setting.base_untrust", -1);
+                config.set("setting.addchange", 10);
+                config.set("setting.removechange", -10);
                 config.set("setting.trust_player", 100);
                 config.set("setting.first_line.score", 30);
                 config.set("setting.first_line.command", "kick {player}");
@@ -107,6 +111,13 @@ public class ConfigManager {
             default -> "";
         };
     }
+    public double getDefaultTrustFirstJoin() {
+        return config.getDouble("setting.default_trust_first_join");
+    }
+
+    public double getAddChange() {
+        return config.getDouble("setting.addchange");
+    }
 
     public int defaultSaveZoneStartX() {
         return config.getInt("save_zone.default_zone.start_chunk_x");
@@ -144,36 +155,16 @@ public class ConfigManager {
         return config.getDouble("setting.trust_player");
     }
 
-    public String getDatabaseType() {
-        return config.getString("database.type");
-    }
-
-    public String getMySQLHost() {
-        return config.getString("database.mysql.host");
-    }
-
-    public int getMySQLPort() {
-        return config.getInt("database.mysql.port");
-    }
-
-    public String getMySQLDatabase() {
-        return config.getString("database.mysql.database");
-    }
-
-    public String getMySQLUser() {
-        return config.getString("database.mysql.user");
-    }
-
-    public String getMySQLPassword() {
-        return config.getString("database.mysql.password");
-    }
-
-    public String getSQLiteFile() {
-        return config.getString("database.sqlite.file");
-    }
-
     public void reloadConfig() {
         plugin.reloadConfig();
         config = plugin.getConfig();
+    }
+
+    public double getRemoveChange() {
+        return config.getDouble("setting.removechange");
+    }
+
+    public double getHourAdd() {
+        return config.getDouble("setting.trust_add_hour");
     }
 }

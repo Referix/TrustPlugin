@@ -4,11 +4,11 @@ main: org.referix.trustPlugin.TrustPlugin
 api-version: '1.21'
 depend: [LuckPerms]
 commands:
-  trust:
+  trusts:
     usage: /<command>
     description: add reputation
     permission: trust.reload
-  addrep:
+  trust:
     usage: /<command>
     description: add reputation
     permission: trust.addreputation
@@ -18,7 +18,7 @@ commands:
     usage: /<command>
     description: право виконувати команду для створення власноъ сейв зони
     permission: trust.safezone.create
-  removerep:
+  untrust:
     usage: /<command>
     description: remove reputation
     permission: trust.removereputation

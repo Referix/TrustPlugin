@@ -33,6 +33,7 @@ public final class TrustPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        configManager = new ConfigManager(this);
         this.database = DatabaseFactory.createDatabase();
         database.connect();
         database.createTable(DatabaseTable.PLAYER_TRUSTS);
@@ -40,7 +41,6 @@ public final class TrustPlugin extends JavaPlugin {
         database.createTable(DatabaseTable.PLAYER_LINES);
         database.createTable(DatabaseTable.SAFE_ZONE);
         PermissionUtil.init();
-        configManager = new ConfigManager(this);
 
         safeZoneManager = new SafeZoneManager(database, configManager);
 
@@ -49,12 +49,12 @@ public final class TrustPlugin extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(database, playerDataCache), this);
 
-        new AddReputation("addrep", database);
-        new RemoveReputation("removerep", database);
+        new AddReputation("trust", database);
+        new RemoveReputation("untrust", database);
         new ListReputation("listrep", database);
         new TrustAccept("trustaccept", database, playerDataCache, logger);
         new TrustDeny("trustdeny",database, logger);
-        new ReloadCommand("trust");
+        new ReloadCommand("trusts");
         new SafeZonePlayerCreate("safezone", configManager, database,safeZoneManager);
 
         new PlayerTrustPlaceholders(this, playerDataCache).register();

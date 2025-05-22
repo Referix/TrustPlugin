@@ -7,10 +7,8 @@ import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
-import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
-import org.referix.utils.ConfigManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +29,7 @@ public class AddReputation extends AbstractCommand {
             Component message = TrustPlugin.getInstance().getConfigManager().getMessage("no_correctly_command");
             sender.sendMessage(message);
             return true;
-        } else if (!sender.hasPermission("trust.addrep")) {
+        } else if (!sender.hasPermission("trust.addreputation")) {
             sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
             return true;
         } else if (!(sender instanceof Player)) {
@@ -41,8 +39,8 @@ public class AddReputation extends AbstractCommand {
         Player actor = (Player) sender;
         if (target == null) return true;
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-
-        TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), 10, combinedArgs, System.currentTimeMillis());
+        double change = TrustPlugin.getInstance().getConfigManager().getAddChange();
+        TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), change, combinedArgs, System.currentTimeMillis());
         databaseManager.insertDataAsync(DatabaseTable.TRUST_CHANGES, trustChangeDB,null);
 
 

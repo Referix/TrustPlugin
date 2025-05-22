@@ -31,7 +31,7 @@ public class RemoveReputation extends AbstractCommand {
                 Component message = TrustPlugin.getInstance().getConfigManager().getMessage("no_correctly_command");
                 sender.sendMessage(message);
                 return true;
-            } else if (!sender.hasPermission("trust.removerep")) {
+            } else if (!sender.hasPermission("trust.removereputation")) {
                 sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
                 return true;
             } else if (!(sender instanceof Player)) {
@@ -42,7 +42,9 @@ public class RemoveReputation extends AbstractCommand {
             Player actor = (Player) sender;
             if (target == null) return true;
             String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-            TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), -10, combinedArgs, System.currentTimeMillis());
+            double change = TrustPlugin.getInstance().getConfigManager().getRemoveChange();
+
+            TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), change, combinedArgs, System.currentTimeMillis());
             databaseManager.insertDataAsync(DatabaseTable.TRUST_CHANGES, trustChangeDB, null);
 
 
