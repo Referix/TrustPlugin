@@ -3,10 +3,7 @@ package org.referix.trustPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.referix.commands.command.AddReputation;
-import org.referix.commands.command.ListReputation;
-import org.referix.commands.command.ReloadCommand;
-import org.referix.commands.command.RemoveReputation;
+import org.referix.commands.command.*;
 import org.referix.commands.command.utilcommand.TrustAccept;
 import org.referix.commands.command.utilcommand.TrustDeny;
 import org.referix.database.DatabaseFactory;
@@ -14,6 +11,7 @@ import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.SafeZoneDB;
 import org.referix.event.ReputationListener;
+import org.referix.savezone.ListenerSaveZone;
 import org.referix.savezone.SafeZoneManager;
 import org.referix.utils.*;
 
@@ -46,7 +44,7 @@ public final class TrustPlugin extends JavaPlugin {
 
         safeZoneManager = new SafeZoneManager(database, configManager);
 
-        playerDataCache = new PlayerDataCache();
+        playerDataCache = new PlayerDataCache(configManager);
         logger = new FileLogger(this);
 
         Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(database, playerDataCache), this);
@@ -57,11 +55,12 @@ public final class TrustPlugin extends JavaPlugin {
         new TrustAccept("trustaccept", database, playerDataCache, logger);
         new TrustDeny("trustdeny",database, logger);
         new ReloadCommand("trust");
-
+        new SafeZonePlayerCreate("safezone", configManager, database,safeZoneManager);
 
         new PlayerTrustPlaceholders(this, playerDataCache).register();
         ReputationListener listener = new ReputationListener(this);
         Bukkit.getPluginManager().registerEvents(listener, this);
+        Bukkit.getPluginManager().registerEvents(new ListenerSaveZone(safeZoneManager, playerDataCache), this);
 
     }
 

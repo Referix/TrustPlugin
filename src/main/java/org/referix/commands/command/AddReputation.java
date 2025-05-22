@@ -43,7 +43,7 @@ public class AddReputation extends AbstractCommand {
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
         TrustChangeDB trustChangeDB = new TrustChangeDB(target.getUniqueId(), actor.getUniqueId(), 10, combinedArgs, System.currentTimeMillis());
-        databaseManager.insertDataAsync(DatabaseTable.TRUST_CHANGES, trustChangeDB);
+        databaseManager.insertDataAsync(DatabaseTable.TRUST_CHANGES, trustChangeDB,null);
 
 
         return false;

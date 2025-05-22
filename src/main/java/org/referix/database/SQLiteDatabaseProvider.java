@@ -51,7 +51,7 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
     }
 
     @Override
-    public <T> void insertDataAsync(DatabaseTable table, T object) {
+    public <T> void insertDataAsync(DatabaseTable table, T object, Runnable callback) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -98,31 +98,40 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
                 } catch (SQLException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            }
-        }.runTaskAsynchronously(TrustPlugin.getInstance());
-    }
 
-    @Override
-    public void updateSafeZone(SafeZoneDB safeZone) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                String sql = "UPDATE safe_zone SET server_id = ?, player_id = ?, start_chunk_x = ?, end_chunk_x = ?, start_chunk_z = ?, end_chunk_z = ? WHERE id = ?";
-                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                    stmt.setString(1, safeZone.server_id);
-                    stmt.setString(2, safeZone.player_id);
-                    stmt.setInt(3, safeZone.start_chunk_x);
-                    stmt.setInt(4, safeZone.end_chunk_x);
-                    stmt.setInt(5, safeZone.start_chunk_z);
-                    stmt.setInt(6, safeZone.end_chunk_z);
-                    stmt.setInt(7, safeZone.id);
-                    stmt.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                // Запускаємо callback в основному потоці Bukkit
+                if (callback != null) {
+                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
+
+
+    public void updateSafeZone(SafeZoneDB safeZone, Runnable callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "UPDATE safe_zone SET server_id = ?, start_chunk_x = ?, end_chunk_x = ?, start_chunk_z = ?, end_chunk_z = ? WHERE player_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setString(1, safeZone.server_id);
+                    stmt.setInt(2, safeZone.start_chunk_x);
+                    stmt.setInt(3, safeZone.end_chunk_x);
+                    stmt.setInt(4, safeZone.start_chunk_z);
+                    stmt.setInt(5, safeZone.end_chunk_z);
+                    stmt.setString(6, safeZone.player_id);
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // Запускаємо колбек в основному потоці Bukkit
+                Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+
 
 
     @Override

@@ -96,7 +96,7 @@ public class TrustAccept extends AbstractCommand {
                         System.out.println("first line");
                         databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
                             if (lines.isEmpty()){
-                                databaseManager.insertDataAsync(DatabaseTable.PLAYER_LINES, new PlayerCommandDB(targetId,1));
+                                databaseManager.insertDataAsync(DatabaseTable.PLAYER_LINES, new PlayerCommandDB(targetId,1), null);
                                 Component messageTemplate = TrustPlugin.getInstance().getConfigManager().getMessage("first_line.command","player", Bukkit.getOfflinePlayer(targetId).getName());
                                 String command = PlainTextComponentSerializer.plainText().serialize(messageTemplate);
                                 ReputationListener.sendToVelocity(player, targetId.toString() ,command);
@@ -131,7 +131,9 @@ public class TrustAccept extends AbstractCommand {
                             if (has) {
                                 System.out.println("remove reputation permission");
                                 PermissionUtil.removePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
-                                    return PermissionUtil.removePermission(targetId, "trust.removereputation");
+                                    return PermissionUtil.removePermission(targetId, "trust.removereputation").thenCompose(aVoids -> {
+                                        return PermissionUtil.removePermission(targetId, "trust.safezone.create");
+                                    });
                                 });
                             }
                         });
@@ -142,7 +144,9 @@ public class TrustAccept extends AbstractCommand {
                             if (!has) {
                                 System.out.println("add reputation permission");
                                 PermissionUtil.givePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
-                                    return PermissionUtil.givePermission(targetId, "trust.removereputation");
+                                    return PermissionUtil.givePermission(targetId, "trust.removereputation").thenCompose(aVoids ->{
+                                        return PermissionUtil.givePermission(targetId, "trust.safezone.create");
+                                    });
                                 });
                             }
                         });

@@ -24,7 +24,7 @@ public class PlayerEvent implements Listener {
                 PlayerTrustDB.class, playerTrustDBs -> {
                     if (playerTrustDBs.isEmpty()) {
                         PlayerTrustDB playerTrustDB = new PlayerTrustDB(event.getPlayer().getUniqueId(), 50);
-                        databaseManager.insertDataAsync(DatabaseTable.PLAYER_TRUSTS, playerTrustDB);
+                        databaseManager.insertDataAsync(DatabaseTable.PLAYER_TRUSTS, playerTrustDB, null);
                     } else {
                         // Якщо дані знайдено, обробляємо перший елемент
                         PlayerTrustDB playerTrustDB = playerTrustDBs.getFirst();

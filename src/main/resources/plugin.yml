@@ -14,6 +14,10 @@ commands:
     permission: trust.addreputation
     alias:
       - trust
+  safezone:
+    usage: /<command>
+    description: право виконувати команду для створення власноъ сейв зони
+    permission: trust.safezone.create
   removerep:
     usage: /<command>
     description: remove reputation

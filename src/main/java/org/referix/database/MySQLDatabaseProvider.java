@@ -51,7 +51,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
     }
 
     @Override
-    public <T> void insertDataAsync(DatabaseTable table, T object) {
+    public <T> void insertDataAsync(DatabaseTable table, T object, Runnable callback) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -65,36 +65,30 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
 
                     for (Field field : fields) {
                         field.setAccessible(true);
-                        String name = field.getName();
-                        if ("id".equals(name) || "log_timestamp".equals(name)) continue;
+                        if ("id".equals(field.getName()) || "log_timestamp".equals(field.getName())) continue;
 
-                        // Обгортаємо ім'я стовпця в зворотні лапки
-                        columns.append("`").append(name).append("`,");
+                        columns.append(field.getName()).append(",");
                         placeholders.append("?,");
 
-                        Object val;
                         if (field.getType() == Timestamp.class) {
-                            val = new Timestamp(System.currentTimeMillis());
+                            values.add(new Timestamp(System.currentTimeMillis()));
                         } else if (field.getType() == Location.class) {
-                            Location loc = (Location) field.get(object);
-                            val = (loc != null)
-                                    ? loc.getWorld().getName() + ":" + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ()
-                                    : null;
-                        } else if (field.getType() == UUID.class) {
-                            UUID uuid = (UUID) field.get(object);
-                            val = (uuid != null) ? uuid.toString() : null;
+                            Location location = (Location) field.get(object);
+                            if (location != null) {
+                                String locationString = location.getWorld().getName() + ":" + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
+                                values.add(locationString);
+                            } else {
+                                values.add(null);
+                            }
                         } else {
-                            val = field.get(object);
+                            values.add(field.get(object));
                         }
-                        values.add(val);
                     }
 
-                    // Обрізати останні коми
                     columns.setLength(columns.length() - 1);
                     placeholders.setLength(placeholders.length() - 1);
 
-                    String sql = "INSERT INTO `" + table.getTableName() + "` (" +
-                            columns + ") VALUES (" + placeholders + ")";
+                    String sql = "INSERT INTO " + table.getTableName() + " (" + columns + ") VALUES (" + placeholders + ")";
                     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                         for (int i = 0; i < values.size(); i++) {
                             pstmt.setObject(i + 1, values.get(i));
@@ -104,31 +98,40 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                 } catch (SQLException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
-            }
-        }.runTaskAsynchronously(TrustPlugin.getInstance());
-    }
 
-    @Override
-    public void updateSafeZone(SafeZoneDB safeZone) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                String sql = "UPDATE safe_zone SET server_id = ?, player_id = ?, start_chunk_x = ?, end_chunk_x = ?, start_chunk_z = ?, end_chunk_z = ? WHERE id = ?";
-                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                    stmt.setString(1, safeZone.server_id);
-                    stmt.setString(2, safeZone.player_id);
-                    stmt.setInt(3, safeZone.start_chunk_x);
-                    stmt.setInt(4, safeZone.end_chunk_x);
-                    stmt.setInt(5, safeZone.start_chunk_z);
-                    stmt.setInt(6, safeZone.end_chunk_z);
-                    stmt.setInt(7, safeZone.id);
-                    stmt.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                // Запускаємо callback в основному потоці Bukkit
+                if (callback != null) {
+                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
+
+
+    public void updateSafeZone(SafeZoneDB safeZone, Runnable callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String sql = "UPDATE safe_zone SET server_id = ?, start_chunk_x = ?, end_chunk_x = ?, start_chunk_z = ?, end_chunk_z = ? WHERE player_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setString(1, safeZone.server_id);
+                    stmt.setInt(2, safeZone.start_chunk_x);
+                    stmt.setInt(3, safeZone.end_chunk_x);
+                    stmt.setInt(4, safeZone.start_chunk_z);
+                    stmt.setInt(5, safeZone.end_chunk_z);
+                    stmt.setString(6, safeZone.player_id);
+                    stmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // Запускаємо колбек в основному потоці Bukkit
+                Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
+            }
+        }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+
 
 
     @Override
