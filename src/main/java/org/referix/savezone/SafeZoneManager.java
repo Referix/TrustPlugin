@@ -10,12 +10,10 @@ import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.ConfigManager;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SafeZoneManager {
 
     private final DatabaseProvider databaseManager;
-    private final Map<String, List<ZoneRectangle>> playerZones = new ConcurrentHashMap<>();
 
     public List<SafeZoneDB> getSafeZoneDBS() {
         return safeZoneDBS;
@@ -25,13 +23,13 @@ public class SafeZoneManager {
     private ConfigManager configManager;
 
 
-    public SafeZoneManager(DatabaseProvider databaseManager, ConfigManager configManager) {
+    public SafeZoneManager(DatabaseProvider databaseManager, ConfigManager configManager, Runnable onLoadComplete) {
         this.databaseManager = databaseManager;
         this.configManager = configManager;
-        loadSafeZones();
+        loadSafeZones(onLoadComplete);
     }
 
-    private void loadSafeZones() {
+    private void loadSafeZones(Runnable onComplete) {
         int startX = configManager.defaultSaveZoneStartX();
         int endX = configManager.defaultSaveZoneEndX();
         int startZ = configManager.defaultSaveZoneStartZ();
@@ -44,47 +42,45 @@ public class SafeZoneManager {
                 list -> {
                     SafeZoneDB zone = new SafeZoneDB(TrustPlugin.getInstance().getServerID(), "server", startX, endX, startZ, endZ);
                     if (list.isEmpty()) {
-                        databaseManager.insertDataAsync(DatabaseTable.SAFE_ZONE, zone, () -> {
-                            // Після вставки — завантажуємо список
-                            loadSafeZoneList();
-                        });
+                        // Вставляємо дефолтну зону, після чого завантажуємо список
+                        databaseManager.insertDataAsync(DatabaseTable.SAFE_ZONE, zone, () -> loadSafeZoneList(onComplete));
                     } else {
-                        System.out.println(startX + " " + endX + " " + startZ + " " + endZ);
-                        System.out.println("UPDATE SAFE ZONE DEFAULT");
-                        databaseManager.updateSafeZone(zone, () -> {
-                            // Після оновлення — завантажуємо список
-                            loadSafeZoneList();
-                        });
+                        Bukkit.getLogger().info("UPDATE SAFE ZONE DEFAULT");
+                        databaseManager.updateSafeZone(zone, () -> loadSafeZoneList(onComplete));
                     }
                 }
         );
     }
 
-    private void loadSafeZoneList() {
+    private void loadSafeZoneList(Runnable onComplete) {
         databaseManager.searchData(
                 DatabaseTable.SAFE_ZONE,
                 "server_id = '" + TrustPlugin.getInstance().getServerID() + "'",
                 SafeZoneDB.class,
                 list -> {
                     this.safeZoneDBS = list;
-
-                    System.out.println("[DEBUG] Завантажено безпечні зони:");
-                    for (SafeZoneDB zone : safeZoneDBS) {
-                        int minX = Math.min(zone.start_chunk_x, zone.end_chunk_x);
-                        int maxX = Math.max(zone.start_chunk_x, zone.end_chunk_x);
-                        int minZ = Math.min(zone.start_chunk_z, zone.end_chunk_z);
-                        int maxZ = Math.max(zone.start_chunk_z, zone.end_chunk_z);
-
-                        int minBlockX = minX * 16;
-                        int maxBlockX = maxX * 16 + 15;
-                        int minBlockZ = minZ * 16;
-                        int maxBlockZ = maxZ * 16 + 15;
-
-                        System.out.println("  - Чанки: X [" + minX + " → " + maxX + "], Z [" + minZ + " → " + maxZ + "]");
-                        System.out.println("  - Блоки: X [" + minBlockX + " → " + maxBlockX + "], Z [" + minBlockZ + " → " + maxBlockZ + "]");
-                    }
+                    logSafeZones();
+                    onComplete.run();
                 }
         );
+    }
+
+    private void logSafeZones() {
+        Bukkit.getLogger().info("[DEBUG] Завантажено безпечні зони:");
+        for (SafeZoneDB zone : safeZoneDBS) {
+            int minX = Math.min(zone.start_chunk_x, zone.end_chunk_x);
+            int maxX = Math.max(zone.start_chunk_x, zone.end_chunk_x);
+            int minZ = Math.min(zone.start_chunk_z, zone.end_chunk_z);
+            int maxZ = Math.max(zone.start_chunk_z, zone.end_chunk_z);
+
+            int minBlockX = minX * 16;
+            int maxBlockX = maxX * 16 + 15;
+            int minBlockZ = minZ * 16;
+            int maxBlockZ = maxZ * 16 + 15;
+
+            Bukkit.getLogger().info("  - Чанки: X [" + minX + " → " + maxX + "], Z [" + minZ + " → " + maxZ + "]");
+            Bukkit.getLogger().info("  - Блоки: X [" + minBlockX + " → " + maxBlockX + "], Z [" + minBlockZ + " → " + maxBlockZ + "]");
+        }
     }
 
 
@@ -140,25 +136,5 @@ public class SafeZoneManager {
         return false;
     }
 
-
-
-    /**
-     * Приватний допоміжний клас для зберігання діапазонів
-     */
-    private static class ZoneRectangle {
-        final int minX, maxX;
-        final int minZ, maxZ;
-
-        ZoneRectangle(int x1, int x2, int z1, int z2) {
-            this.minX = Math.min(x1, x2);
-            this.maxX = Math.max(x1, x2);
-            this.minZ = Math.min(z1, z2);
-            this.maxZ = Math.max(z1, z2);
-        }
-
-        boolean isInside(int x, int z) {
-            return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
-        }
-    }
 
 }

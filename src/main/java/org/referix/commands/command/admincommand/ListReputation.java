@@ -1,4 +1,4 @@
-package org.referix.commands.command;
+package org.referix.commands.command.admincommand;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -13,64 +13,59 @@ import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseProvider;
 import org.referix.database.pojo.TrustChangeDB;
 import org.referix.trustPlugin.TrustPlugin;
-import org.referix.utils.ConfigManager;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class ListReputation extends AbstractCommand {
+public class ListReputation implements HelperCommand {
     private DatabaseProvider databaseManager;
 
 
-    public ListReputation(String command, DatabaseProvider databaseManager) {
-        super(command);
+    public ListReputation(Player p, String[] args, DatabaseProvider databaseManager) {
         this.databaseManager = databaseManager;
+        execute(p,args);
     }
 
     @Override
-    public boolean execute(CommandSender sender, String label, String[] args) {
+    public boolean execute(Player p, String[] args) {
         int page = 1;
         String targetId = null;
-        if (!sender.hasPermission("trust.list")) {
-            sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
+        if (!p.hasPermission("trust.list")) {
+            p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
             return true;
         }
-        if (args.length == 0) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("not_player"));
-                return true;
-            }
-            targetId = ((Player) sender).getUniqueId().toString();
-        } else if (args[0].equalsIgnoreCase("all")) {
-            if (args.length > 1) {
+        if (args.length == 1) {
+            targetId = p.getUniqueId().toString();
+        } else if (args[1].equalsIgnoreCase("all")) {
+            if (args.length > 2) {
                 try {
-                    page = Integer.parseInt(args[1]);
+                    page = Integer.parseInt(args[2]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
+                    p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
                     return true;
                 }
             }
         } else {
-            Player target = Bukkit.getPlayerExact(args[0]);
+            Player target = Bukkit.getPlayerExact(args[1]);
             if (target == null) {
-                sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("player_not_found"));
+                p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("player_not_found"));
                 return true;
             }
             targetId = target.getUniqueId().toString();
-            if (args.length > 1) {
+            if (args.length > 2) {
                 try {
-                    page = Integer.parseInt(args[1]);
+                    page = Integer.parseInt(args[2]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
+                    p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("page_should_be_number"));
                     return true;
                 }
             }
         }
 
         if (targetId == null) {
-            listAllReputation(sender, page);
+            listAllReputation(p, page);
         } else {
-            listPlayerReputation(sender, targetId, page);
+            listPlayerReputation(p, targetId, page);
         }
 
         return true;

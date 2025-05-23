@@ -37,14 +37,17 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
     }
 
     @Override
-    public void createTable(DatabaseTable table) {
+    public void createTable(DatabaseTable table, TableCreateCallback callback) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute("CREATE TABLE IF NOT EXISTS " + table.getTableName() + " (" + table.getColumns() + ")");
+                    // Після успіху виконуємо callback у головному потоці
+                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.onSuccess());
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    // При помилці викликаємо помилковий callback у головному потоці
+                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.onError(e));
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
@@ -128,7 +131,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                 // Запускаємо колбек в основному потоці Bukkit
                 Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
             }
-        }.runTaskAsynchronously(TrustPlugin.getInstance());
+        }.runTask(TrustPlugin.getInstance());
     }
 
 
@@ -167,6 +170,44 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
+    }
+
+    @Override
+    public <T> void searchSinhronizeData(DatabaseTable table, String condition, Class<T> clazz, Consumer<List<T>> callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                List<T> results = new ArrayList<>();
+                String sql = "SELECT * FROM " + table.getTableName() + (condition != null ? " WHERE " + condition : "");
+
+                try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+                    Field[] fields = clazz.getDeclaredFields();
+
+                    while (rs.next()) {
+                        T obj = clazz.getDeclaredConstructor().newInstance();
+                        for (Field field : fields) {
+                            field.setAccessible(true);
+                            try {
+                                Object value = rs.getObject(field.getName());
+                                if (field.getType() == Timestamp.class && value instanceof String) {
+                                    field.set(obj, Timestamp.valueOf((String) value));
+                                } else if (field.getType() == UUID.class && value instanceof String) {
+                                    field.set(obj, UUID.fromString((String) value));
+                                } else {
+                                    field.set(obj, value);
+                                }
+                            } catch (SQLException | IllegalArgumentException ignored) {
+                            }
+                        }
+                        results.add(obj);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.accept(results));
+            }
+        }.runTask(TrustPlugin.getInstance());
     }
 
     @Override

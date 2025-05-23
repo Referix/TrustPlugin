@@ -29,11 +29,12 @@ public class PlayerEvent implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        databaseManager.searchData(DatabaseTable.PLAYER_TRUSTS, "player_id = '" + event.getPlayer().getUniqueId() + "'",
+        databaseManager.searchSinhronizeData(DatabaseTable.PLAYER_TRUSTS, "player_id = '" + event.getPlayer().getUniqueId() + "'",
                 PlayerTrustDB.class, playerTrustDBs -> {
                     if (playerTrustDBs.isEmpty()) {
                         PlayerTrustDB playerTrustDB = new PlayerTrustDB(event.getPlayer().getUniqueId(), TrustPlugin.getInstance().getConfigManager().getDefaultTrustFirstJoin());
                         databaseManager.insertDataAsync(DatabaseTable.PLAYER_TRUSTS, playerTrustDB, null);
+                        playerDataCache.set(playerTrustDB.getPlayerId(), String.valueOf(Math.floor(playerTrustDB.getScore())));
                     } else {
                         // Якщо дані знайдено, обробляємо перший елемент
                         PlayerTrustDB playerTrustDB = playerTrustDBs.getFirst();

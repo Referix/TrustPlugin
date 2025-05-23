@@ -36,6 +36,8 @@ public class ConfigManager {
                 config.set("messages.reputations_for_all", "== Репутація всіх гравців (сторінка {page}) ==");
                 config.set("messages.reputations_for_player", "== Репутація гравця {player} (сторінка {page}) ==");
                 config.set("messages.player_not_found", "Гравець не знайдений.");
+                config.set("messages.trust_added", "Очків добавленно: {score}");
+                config.set("messages.trust_removed", "Очків забрано: {score}");
                 config.set("messages.page_should_be_number", "Сторінка повинна бути числом.");
                 config.set("messages.trust_change_message", "<#00ff00>Довіра гравця {player} змінена до {trust_level} ({sign}{delta})");
 
@@ -108,6 +110,8 @@ public class ConfigManager {
             case "trust_change_message" -> config.getString("messages.trust_change_message");
             case "second_line.command" -> config.getString("setting.second_line.command");
             case "first_line.command" -> config.getString("setting.first_line.command");
+            case "trust_added" -> config.getString("messages.trust_added");
+            case "trust_removed" -> config.getString("messages.trust_removed");
             default -> "";
         };
     }
