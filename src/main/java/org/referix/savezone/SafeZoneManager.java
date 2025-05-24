@@ -66,7 +66,7 @@ public class SafeZoneManager {
     }
 
     private void logSafeZones() {
-        Bukkit.getLogger().info("[DEBUG] Завантажено безпечні зони:");
+        TrustPlugin.getInstance().debug("[DEBUG] Завантажено безпечні зони:");
         for (SafeZoneDB zone : safeZoneDBS) {
             int minX = Math.min(zone.start_chunk_x, zone.end_chunk_x);
             int maxX = Math.max(zone.start_chunk_x, zone.end_chunk_x);
@@ -78,8 +78,8 @@ public class SafeZoneManager {
             int minBlockZ = minZ * 16;
             int maxBlockZ = maxZ * 16 + 15;
 
-            Bukkit.getLogger().info("  - Чанки: X [" + minX + " → " + maxX + "], Z [" + minZ + " → " + maxZ + "]");
-            Bukkit.getLogger().info("  - Блоки: X [" + minBlockX + " → " + maxBlockX + "], Z [" + minBlockZ + " → " + maxBlockZ + "]");
+            TrustPlugin.getInstance().debug("  - Чанки: X [" + minX + " → " + maxX + "], Z [" + minZ + " → " + maxZ + "]");
+            TrustPlugin.getInstance().debug("  - Блоки: X [" + minBlockX + " → " + maxBlockX + "], Z [" + minBlockZ + " → " + maxBlockZ + "]");
         }
     }
 
@@ -92,7 +92,7 @@ public class SafeZoneManager {
     public boolean isSafeZone(Location location) {
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
-        System.out.println("SIZE: " + safeZoneDBS.size());
+        TrustPlugin.getInstance().debug("SIZE: " + safeZoneDBS.size());
 
         for (SafeZoneDB zone : safeZoneDBS) {
             int minX = Math.min(zone.start_chunk_x, zone.end_chunk_x);
@@ -102,12 +102,12 @@ public class SafeZoneManager {
 
             if (chunkX >= minX && chunkX <= maxX &&
                     chunkZ >= minZ && chunkZ <= maxZ) {
-                System.out.println("[DEBUG] Локація потрапила в безпечну зону!");
+                TrustPlugin.getInstance().debug("[DEBUG] Локація потрапила в безпечну зону!");
                 return true;
             }
         }
 
-        System.out.println("[DEBUG] Локація не в безпечній зоні.");
+        TrustPlugin.getInstance().debug("[DEBUG] Локація не в безпечній зоні.");
         return false;
     }
 
@@ -115,7 +115,7 @@ public class SafeZoneManager {
     public boolean isPlayerSafeZone(Location location, Player p) {
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
-        System.out.println("SIZE: " + safeZoneDBS.size());
+        TrustPlugin.getInstance().debug("SIZE: " + safeZoneDBS.size());
 
         for (SafeZoneDB zone : safeZoneDBS) {
             int minX = Math.min(zone.start_chunk_x, zone.end_chunk_x);
@@ -127,12 +127,12 @@ public class SafeZoneManager {
                     chunkZ >= minZ && chunkZ <= maxZ &&
                     zone.player_id.equals(p.getUniqueId().toString())) {
 
-                System.out.println("[DEBUG] Локація потрапила в безпечну зону гравця: " + p.getName());
+                TrustPlugin.getInstance().debug("[DEBUG] Локація потрапила в безпечну зону гравця: " + p.getName());
                 return true;
             }
         }
 
-        System.out.println("[DEBUG] Локація не в безпечній зоні для гравця: " + p.getName());
+        TrustPlugin.getInstance().debug("[DEBUG] Локація не в безпечній зоні для гравця: " + p.getName());
         return false;
     }
 

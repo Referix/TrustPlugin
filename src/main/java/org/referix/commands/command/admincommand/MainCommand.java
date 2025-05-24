@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseProvider;
 import org.referix.trustPlugin.TrustPlugin;
+import org.referix.utils.PlayerDataCache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,11 +16,13 @@ import java.util.UUID;
 
 public class MainCommand extends AbstractCommand {
     private DatabaseProvider databaseManager;
+    private PlayerDataCache playerDataCache;
 
 
-    public MainCommand(String command, DatabaseProvider databaseManager) {
+    public MainCommand(String command, DatabaseProvider databaseManager, PlayerDataCache playerDataCache) {
         super(command);
         this.databaseManager = databaseManager;
+        this.playerDataCache = playerDataCache;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class MainCommand extends AbstractCommand {
                     return true;
                 }
                 UUID targetPlayer = Bukkit.getPlayer(args[1]).getUniqueId();
-                new AdminAddTrust(p,args,targetPlayer,databaseManager);
+                new AdminAddTrust(p,args,targetPlayer,databaseManager,playerDataCache);
             }
             case "remove" -> {
                 if (!sender.hasPermission("trust.admin.remove")) {
@@ -66,7 +69,7 @@ public class MainCommand extends AbstractCommand {
                     return true;
                 }
                 UUID targetPlayer = Bukkit.getPlayer(args[1]).getUniqueId();
-                new AdminRemoveTrust(p,args,targetPlayer,databaseManager);
+                new AdminRemoveTrust(p,args,targetPlayer,databaseManager, playerDataCache);
             }
             case "list" -> {
                 if (!sender.hasPermission("trust.admin.list")) {
@@ -85,6 +88,15 @@ public class MainCommand extends AbstractCommand {
                     return true;
                 }
                 sendHelp(sender);
+            }
+            case "debug" -> {
+                if (TrustPlugin.getInstance().isDebugEnabled()){
+                    TrustPlugin.getInstance().setDebugEnabled(false);
+                    sender.sendMessage("Debug off");
+                } else {
+                    TrustPlugin.getInstance().setDebugEnabled(true);
+                    sender.sendMessage("Debug on");
+                }
             }
             default -> {
                 sender.sendMessage("§cНевідома команда. Використайте /trusts help для списку команд.");

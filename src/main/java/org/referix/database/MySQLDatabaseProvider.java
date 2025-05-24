@@ -15,6 +15,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
     private final String host, database, username, password;
     private final int port;
     private Connection connection;
+    private boolean debug = TrustPlugin.getInstance().isDebugEnabled();
 
     public MySQLDatabaseProvider(String host, int port, String database, String username, String password) {
         this.host = host;
@@ -76,7 +77,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                         Object value;
                         if (field.getType() == Timestamp.class) {
                             value = System.currentTimeMillis();
-                            System.out.println("[DEBUG] Inserting timestamp (as millis): " + value);
+                            TrustPlugin.getInstance().debug("[DEBUG] Inserting timestamp (as millis): " + value);
                         } else if (field.getType() == Location.class) {
                             Location location = (Location) field.get(object);
                             if (location != null) {
@@ -91,7 +92,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                             value = field.get(object);
                         }
 
-                        System.out.println("[DEBUG] Field: " + field.getName() + " = " + value + " (" + (value != null ? value.getClass().getSimpleName() : "null") + ")");
+                        TrustPlugin.getInstance().debug("[DEBUG] Field: " + field.getName() + " = " + value + " (" + (value != null ? value.getClass().getSimpleName() : "null") + ")");
                         values.add(value);
                     }
 
@@ -99,7 +100,7 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                     placeholders.setLength(placeholders.length() - 1);
 
                     String sql = "INSERT INTO " + table.getTableName() + " (" + columns + ") VALUES (" + placeholders + ")";
-                    System.out.println("[DEBUG] SQL: " + sql);
+                    TrustPlugin.getInstance().debug("[DEBUG] SQL: " + sql);
 
                     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                         for (int i = 0; i < values.size(); i++) {

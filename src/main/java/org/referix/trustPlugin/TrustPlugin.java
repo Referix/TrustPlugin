@@ -31,6 +31,8 @@ public final class TrustPlugin extends JavaPlugin {
 
     private SafeZoneManager safeZoneManager;
 
+    private boolean debugEnabled = false; // перемикач
+
     @Override
     public void onEnable() {
         configManager = new ConfigManager(this);
@@ -116,7 +118,7 @@ public final class TrustPlugin extends JavaPlugin {
                 new RemoveReputation("untrust", database);
                 new TrustAccept("trustaccept", database, playerDataCache, logger);
                 new TrustDeny("trustdeny", database, logger);
-                new MainCommand("trusts", database);
+                new MainCommand("trusts", database, playerDataCache);
                 new SafeZonePlayerCreate("safezone", configManager, database, safeZoneManager);
 
                 new PlayerTrustPlaceholders(this, playerDataCache).register();
@@ -144,6 +146,20 @@ public final class TrustPlugin extends JavaPlugin {
 
     public String getServerID() {
         return serverID;
+    }
+
+    public boolean isDebugEnabled() {
+        return debugEnabled;
+    }
+
+    public void setDebugEnabled(boolean debugEnabled) {
+        this.debugEnabled = debugEnabled;
+    }
+
+    public void debug(String message) {
+        if (debugEnabled) {
+            getLogger().info("[DEBUG] " + message);
+        }
     }
 
     public void setServerID(String serverID) {
