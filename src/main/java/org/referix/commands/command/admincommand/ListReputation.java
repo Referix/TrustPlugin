@@ -117,7 +117,7 @@ public class ListReputation implements HelperCommand {
                     }
                 }
 
-                sendPageControls(sender, currentPage, totalPages, "/listrep all");
+                sendPageControls(sender, currentPage, totalPages, "/trusts list all");
             });
         });
     }
@@ -176,7 +176,7 @@ public class ListReputation implements HelperCommand {
                     }
                 }
                 String playerName = Bukkit.getOfflinePlayer(UUID.fromString(playerId)).getName();
-                sendPageControls(sender, currentPage, totalPages, "/listrep " + playerName);
+                sendPageControls(sender, currentPage, totalPages, "/trusts list " + playerName);
             });
         });
     }

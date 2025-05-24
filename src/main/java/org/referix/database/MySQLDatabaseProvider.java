@@ -70,28 +70,37 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                         field.setAccessible(true);
                         if ("id".equals(field.getName()) || "log_timestamp".equals(field.getName())) continue;
 
-                        columns.append(field.getName()).append(",");
+                        columns.append("`").append(field.getName()).append("`,");
                         placeholders.append("?,");
 
+                        Object value;
                         if (field.getType() == Timestamp.class) {
-                            values.add(new Timestamp(System.currentTimeMillis()));
+                            value = System.currentTimeMillis();
+                            System.out.println("[DEBUG] Inserting timestamp (as millis): " + value);
                         } else if (field.getType() == Location.class) {
                             Location location = (Location) field.get(object);
                             if (location != null) {
-                                String locationString = location.getWorld().getName() + ":" + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
-                                values.add(locationString);
+                                value = location.getWorld().getName() + ":" + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
                             } else {
-                                values.add(null);
+                                value = null;
                             }
+                        } else if (field.getType() == UUID.class) {
+                            UUID uuid = (UUID) field.get(object);
+                            value = uuid != null ? uuid.toString() : null;
                         } else {
-                            values.add(field.get(object));
+                            value = field.get(object);
                         }
+
+                        System.out.println("[DEBUG] Field: " + field.getName() + " = " + value + " (" + (value != null ? value.getClass().getSimpleName() : "null") + ")");
+                        values.add(value);
                     }
 
                     columns.setLength(columns.length() - 1);
                     placeholders.setLength(placeholders.length() - 1);
 
                     String sql = "INSERT INTO " + table.getTableName() + " (" + columns + ") VALUES (" + placeholders + ")";
+                    System.out.println("[DEBUG] SQL: " + sql);
+
                     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                         for (int i = 0; i < values.size(); i++) {
                             pstmt.setObject(i + 1, values.get(i));
@@ -102,13 +111,13 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
                     e.printStackTrace();
                 }
 
-                // Запускаємо callback в основному потоці Bukkit
                 if (callback != null) {
                     Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), callback);
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
+
 
 
     public void updateSafeZone(SafeZoneDB safeZone, Runnable callback) {
