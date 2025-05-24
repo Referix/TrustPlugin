@@ -71,6 +71,8 @@ public class TrustAccept extends AbstractCommand {
                     double baseTrust = TrustPlugin.getInstance().getConfigManager().getBaseTrust();
                     double baseUntrust = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();
                     double getPermToTrust = TrustPlugin.getInstance().getConfigManager().getTrustLineScore();
+                    double getDownSZLine = TrustPlugin.getInstance().getConfigManager().getDownSafeZone();
+                    double getUpSZLine = TrustPlugin.getInstance().getConfigManager().getUpSafeZone();
 
                     double delta;
 
@@ -90,8 +92,6 @@ public class TrustAccept extends AbstractCommand {
                     databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
 
                     String sign = delta >= 0 ? "+" : "-";
-                    // fix this проблема в тому що виконуватиметься
-                    // кожного разу як тільки гравець потрапляє в цю межу ( 95 -106 )
                     if (newTrust < firstLineScore && newTrust > secondLineScore){
                         System.out.println("first line");
                         databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
@@ -131,22 +131,34 @@ public class TrustAccept extends AbstractCommand {
                             if (has) {
                                 System.out.println("remove reputation permission");
                                 PermissionUtil.removePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
-                                    return PermissionUtil.removePermission(targetId, "trust.removereputation").thenCompose(aVoids -> {
-                                        return PermissionUtil.removePermission(targetId, "trust.safezone.create");
-                                    });
+                                    return PermissionUtil.removePermission(targetId, "trust.removereputation");
                                 });
                             }
                         });
                     }
+                    if (newTrust >= getUpSZLine) {
+                        PermissionUtil.hasPermission(targetId, "trust.addreputation").thenAccept(has -> {
+                            if (has) {
+                                System.out.println("remove reputation permission");
+                                PermissionUtil.givePermission(targetId, "trust.safezone.create");
 
+                            }
+                        });
+                    }
+                    if (newTrust < getUpSZLine) {
+                        PermissionUtil.hasPermission(targetId, "trust.addreputation").thenAccept(has -> {
+                            if (has) {
+                                System.out.println("remove reputation permission");
+                                PermissionUtil.removePermission(targetId, "trust.safezone.create");
+                            }
+                        });
+                    }
                     if (newTrust >= getPermToTrust) {
                         PermissionUtil.hasPermission(targetId, "trust.addreputation").thenAccept(has -> {
                             if (!has) {
                                 System.out.println("add reputation permission");
                                 PermissionUtil.givePermission(targetId, "trust.addreputation").thenCompose(aVoid -> {
-                                    return PermissionUtil.givePermission(targetId, "trust.removereputation").thenCompose(aVoids ->{
-                                        return PermissionUtil.givePermission(targetId, "trust.safezone.create");
-                                    });
+                                    return PermissionUtil.givePermission(targetId, "trust.removereputation");
                                 });
                             }
                         });

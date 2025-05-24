@@ -5,6 +5,7 @@ import org.referix.database.DatabaseProvider;
 import org.referix.database.DatabaseTable;
 import org.referix.database.pojo.PlayerTrustDB;
 import org.referix.trustPlugin.TrustPlugin;
+import org.referix.utils.PlayerDataCache;
 
 import java.util.UUID;
 
@@ -13,10 +14,12 @@ public class AdminRemoveTrust implements HelperCommand{
 
     private UUID targetPlayerID;
     private DatabaseProvider databaseManager;
+    private PlayerDataCache playerDataCache;
 
-    public AdminRemoveTrust(Player p, String[] args, UUID targetPlayerID, DatabaseProvider databaseManager) {
+    public AdminRemoveTrust(Player p, String[] args, UUID targetPlayerID, DatabaseProvider databaseManager, PlayerDataCache playerDataCache) {
         this.targetPlayerID = targetPlayerID;
         this.databaseManager = databaseManager;
+        this.playerDataCache = playerDataCache;
         execute(p,args);
     }
 
@@ -31,7 +34,10 @@ public class AdminRemoveTrust implements HelperCommand{
                         else {
                             double newScore = playerTrustDBs.getFirst().getScore() - Double.parseDouble(args[2]);
                             databaseManager.updatePlayerTrust(targetPlayerID, newScore);
-                            p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("trust_removed","score" , args[2]));
+                            if (playerDataCache.isLoaded()){
+                                playerDataCache.set(playerTrustDBs.getFirst().getPlayerId(), String.valueOf(Math.floor(newScore)));
+                                p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("trust_removed","score" , args[2]));
+                            }
                         }
 
                     });

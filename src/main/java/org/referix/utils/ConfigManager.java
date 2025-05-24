@@ -40,9 +40,17 @@ public class ConfigManager {
                 config.set("messages.trust_removed", "Очків забрано: {score}");
                 config.set("messages.page_should_be_number", "Сторінка повинна бути числом.");
                 config.set("messages.trust_change_message", "<#00ff00>Довіра гравця {player} змінена до {trust_level} ({sign}{delta})");
+                config.set("messages.player_zone_confirm", "<#00ff00>Ви успішно створили сейв зону!");
+                config.set("messages.cooldown", "<#00ff00>Зачекайте ще {time}");
+                config.set("messages.in_safe_zone", "<#00ff00>Ей! тобі заборонено будь що тут робити доки довіра не стане 100");
 
-                config.set("setting.default_trust_first_join",50);
-                config.set("setting.trust_add_hour",1);
+                config.set("setting.default_trust_first_join", 50);
+                config.set("setting.trustcooldown", 1);
+                config.set("setting.untrustcooldown", 1);
+                config.set("setting.default_trust_first_join", 50);
+                config.set("setting.trust_add_hour", 1);
+                config.set("setting.trust_down_safezone", 100);
+                config.set("setting.trust_up_safezone", 500);
                 config.set("setting.base_trust", 1);
                 config.set("setting.base_untrust", -1);
                 config.set("setting.addchange", 10);
@@ -57,6 +65,7 @@ public class ConfigManager {
                 config.set("save_zone.default_zone.end_chunk_x", 10);
                 config.set("save_zone.default_zone.start_chunk_z", -10);
                 config.set("save_zone.default_zone.end_chunk_z", -10);
+                config.set("save_zone.playerzone.radius", 2);
 
                 config.set("database.type", "sqlite");
                 config.set("database.mysql.host", "localhost");
@@ -112,6 +121,9 @@ public class ConfigManager {
             case "first_line.command" -> config.getString("setting.first_line.command");
             case "trust_added" -> config.getString("messages.trust_added");
             case "trust_removed" -> config.getString("messages.trust_removed");
+            case "player_zone_confirm" -> config.getString("messages.player_zone_confirm");
+            case "cooldown" -> config.getString("messages.cooldown");
+            case "in_safe_zone" -> config.getString("messages.in_safe_zone");
             default -> "";
         };
     }
@@ -171,4 +183,25 @@ public class ConfigManager {
     public double getHourAdd() {
         return config.getDouble("setting.trust_add_hour");
     }
+
+    public Integer getPlayerZoneRadius() {
+        return config.getInt("save_zone.playerzone.radius");
+    }
+
+    public double getDownSafeZone() {
+        return config.getDouble("setting.trust_down_safezone");
+    }
+    public double getUpSafeZone() {
+        return config.getDouble("setting.trust_up_safezone");
+    }
+
+    public int getTrustCooldown() {
+        return config.getInt("setting.trustcooldown");
+    }
+
+    public int getUntrustCooldown() {
+        return config.getInt("setting.untrustcooldown");
+    }
+
+
 }

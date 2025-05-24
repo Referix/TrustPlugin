@@ -60,7 +60,10 @@ public class PlayerEvent implements Listener {
                         PlayerTrustDB trustDB = trustMap.get(player.getUniqueId());
                         if (trustDB != null) {
                             double newScore = trustDB.getScore() + TrustPlugin.getInstance().getConfigManager().getHourAdd();
-                            databaseManager.updatePlayerTrust(trustDB.getPlayerId(), newScore);
+                            if (playerDataCache.isLoaded()) {
+                                playerDataCache.set(trustDB.getPlayerId(), String.valueOf(Math.floor(newScore)));
+                                databaseManager.updatePlayerTrust(trustDB.getPlayerId(), newScore);
+                            }
                         }
                     }
                 });

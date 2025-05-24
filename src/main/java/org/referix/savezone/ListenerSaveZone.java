@@ -1,18 +1,17 @@
 package org.referix.savezone;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.*;
+import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.PlayerDataCache;
 
 import java.util.UUID;
@@ -20,6 +19,7 @@ import java.util.UUID;
 public class ListenerSaveZone implements Listener {
     private final SafeZoneManager safeZoneManager;
     private final PlayerDataCache playerDataCache;
+    private final Component message = TrustPlugin.getInstance().getConfigManager().getMessage("in_safe_zone");
 
     public ListenerSaveZone(SafeZoneManager safeZoneManager, PlayerDataCache playerDataCache) {
         this.safeZoneManager = safeZoneManager;
@@ -46,7 +46,7 @@ public class ListenerSaveZone implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (isInSafeZoneAndNoTrusted(event.getBlock().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Тут заборонено ламати блоки!");
+            event.getPlayer().sendMessage(message);
             event.setCancelled(true);
         }
     }
@@ -54,7 +54,7 @@ public class ListenerSaveZone implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         if (isInSafeZoneAndNoTrusted(event.getBlock().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Тут заборонено ставити блоки!");
+            event.getPlayer().sendMessage(message);
             event.setCancelled(true);
         }
     }
@@ -62,58 +62,28 @@ public class ListenerSaveZone implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasBlock() && isInSafeZoneAndNoTrusted(event.getClickedBlock().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Взаємодія з блоками заборонена в безпечній зоні!");
+            event.getPlayer().sendMessage(message);
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
-        if (isInSafeZoneAndNoTrusted(event.getPlayer().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Підйом предметів заборонено в безпечній зоні!");
-            event.setCancelled(true);
-        }
-    }
 
     @EventHandler
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (isInSafeZoneAndNoTrusted(event.getPlayer().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Скидання предметів заборонено в безпечній зоні!");
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof org.bukkit.entity.Player) {
-            org.bukkit.entity.Player player = (org.bukkit.entity.Player) event.getEntity();
-            if (isInSafeZoneAndNoTrusted(player.getLocation(), player.getUniqueId())) {
+    public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
+        if (event.getRightClicked() instanceof ArmorStand) {
+            if (isInSafeZoneAndNoTrusted(event.getRightClicked().getLocation(), event.getPlayer().getUniqueId())) {
+                event.getPlayer().sendMessage(message);
                 event.setCancelled(true);
-                player.sendMessage("У безпечній зоні не можна отримувати шкоду!");
             }
         }
     }
 
     @EventHandler
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof org.bukkit.entity.Player) {
-            org.bukkit.entity.Player damaged = (org.bukkit.entity.Player) event.getEntity();
-
-            boolean damagedInSafeZone = isInSafeZoneAndNoTrusted(damaged.getLocation(), damaged.getUniqueId());
-
-            if (event.getDamager() instanceof org.bukkit.entity.Player) {
-                org.bukkit.entity.Player damager = (org.bukkit.entity.Player) event.getDamager();
-                boolean damagerInSafeZone = isInSafeZoneAndNoTrusted(damager.getLocation(), damager.getUniqueId());
-
-                if (damagedInSafeZone || damagerInSafeZone) {
-                    event.setCancelled(true);
-                    damager.sendMessage("У безпечній зоні не можна завдавати шкоди!");
-                }
-            } else {
-                if (damagedInSafeZone) {
-                    event.setCancelled(true);
-                    damaged.sendMessage("У безпечній зоні не можна отримувати шкоду!");
-                }
+    public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
+        if (event.getRemover() instanceof Player player) {
+            if (isInSafeZoneAndNoTrusted(event.getEntity().getLocation(), player.getUniqueId())) {
+                player.sendMessage(message);
+                event.setCancelled(true);
             }
         }
     }
@@ -121,8 +91,11 @@ public class ListenerSaveZone implements Listener {
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (isInSafeZoneAndNoTrusted(event.getPlayer().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage("Взаємодія з ентіті заборонена в безпечній зоні!");
-            event.setCancelled(true);
+            if (event.getRightClicked() instanceof ArmorStand) {
+                event.getPlayer().sendMessage(message);
+                event.setCancelled(true);
+            }
         }
     }
+
 }

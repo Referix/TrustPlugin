@@ -28,7 +28,6 @@ public class SafeZonePlayerCreate extends AbstractCommand {
         this.safeZoneManager = safeZoneManager;
     }
 
-    private final Object lock = new Object();
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
@@ -48,45 +47,57 @@ public class SafeZonePlayerCreate extends AbstractCommand {
             return false;
         }
 
-        synchronized (player.getUniqueId().toString().intern()) { // Синхронізація по рядку UUID
-            databaseManager.searchData(DatabaseTable.SAFE_ZONE, "player_id = '" + player.getUniqueId() + "'", SafeZoneDB.class, safeZoneList -> {
-                int playerChunkX = player.getLocation().getChunk().getX();
-                int playerChunkZ = player.getLocation().getChunk().getZ();
-
-                int startChunkX = playerChunkX - 2;
-                int endChunkX = playerChunkX + 1;
-                int startChunkZ = playerChunkZ - 2;
-                int endChunkZ = playerChunkZ + 1;
-
-                if (safeZoneList.isEmpty()) {
-                    SafeZoneDB newZone = new SafeZoneDB(
-                            TrustPlugin.getInstance().getServerID(),
-                            player.getUniqueId().toString(),
-                            startChunkX,
-                            endChunkX,
-                            startChunkZ,
-                            endChunkZ
-                    );
-
-                    databaseManager.insertDataAsync(DatabaseTable.SAFE_ZONE, newZone, () -> {
-                        safeZoneManager.getSafeZoneDBS().add(newZone);
-                        player.sendMessage("Безпечна зона створена навколо вас!");
-                    });
-                } else {
-                    SafeZoneDB existingZone = safeZoneList.getFirst();
-                    SafeZoneDB newZone = new SafeZoneDB(TrustPlugin.getInstance().getServerID(),
-                            player.getUniqueId().toString(), startChunkX, endChunkX, startChunkZ, endChunkZ);
-                    databaseManager.updateSafeZone(newZone, () -> {
-                        safeZoneManager.getSafeZoneDBS().remove(existingZone);
-                        safeZoneManager.getSafeZoneDBS().add(newZone);
-                        player.sendMessage("Ваша безпечна зона оновлена!");
-                    });
-                }
-            });
-        }
+        int radius = configManager.getPlayerZoneRadius();
+        createOrUpdateSafeZone(player, radius, () ->
+            player.sendMessage(configManager.getMessage("player_zone_confirm")));
 
         return true;
     }
+
+
+    public void createOrUpdateSafeZone(Player player, int radius, Runnable onFinish) {
+        synchronized (player.getUniqueId().toString().intern()) {
+            databaseManager.searchData(DatabaseTable.SAFE_ZONE,
+                    "player_id = '" + player.getUniqueId() + "'",
+                    SafeZoneDB.class,
+                    safeZoneList -> {
+
+                        int playerChunkX = player.getLocation().getChunk().getX();
+                        int playerChunkZ = player.getLocation().getChunk().getZ();
+
+                        int startChunkX = playerChunkX - radius;
+                        int endChunkX = playerChunkX + radius - 1;
+                        int startChunkZ = playerChunkZ - radius;
+                        int endChunkZ = playerChunkZ + radius - 1;
+
+                        SafeZoneDB newZone = new SafeZoneDB(
+                                TrustPlugin.getInstance().getServerID(),
+                                player.getUniqueId().toString(),
+                                startChunkX,
+                                endChunkX,
+                                startChunkZ,
+                                endChunkZ
+                        );
+
+                        if (safeZoneList.isEmpty()) {
+                            databaseManager.insertDataAsync(DatabaseTable.SAFE_ZONE, newZone, () -> {
+                                safeZoneManager.getSafeZoneDBS().add(newZone);
+                                player.sendMessage("Безпечна зона створена навколо вас!");
+                                if (onFinish != null) onFinish.run();
+                            });
+                        } else {
+                            SafeZoneDB existingZone = safeZoneList.getFirst();
+                            databaseManager.updateSafeZone(newZone, () -> {
+                                safeZoneManager.getSafeZoneDBS().remove(existingZone);
+                                safeZoneManager.getSafeZoneDBS().add(newZone);
+                                player.sendMessage("Ваша безпечна зона оновлена!");
+                                if (onFinish != null) onFinish.run();
+                            });
+                        }
+                    });
+        }
+    }
+
 
 
 }
