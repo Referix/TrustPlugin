@@ -56,8 +56,10 @@ public class MainCommand extends AbstractCommand {
                     sender.sendMessage("§cВикористання: /trusts add <гравець> <score>");
                     return true;
                 }
-                UUID targetPlayer = Bukkit.getPlayer(args[1]).getUniqueId();
-                new AdminAddTrust(p,args,targetPlayer,databaseManager,playerDataCache);
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+                UUID targetUUID = offlinePlayer.getUniqueId();
+
+                new AdminAddTrust(p, args, targetUUID, databaseManager, playerDataCache);
             }
             case "remove" -> {
                 if (!sender.hasPermission("trust.admin.remove")) {
@@ -68,8 +70,10 @@ public class MainCommand extends AbstractCommand {
                     sender.sendMessage("§cВикористання: /trusts remove <гравець>");
                     return true;
                 }
-                UUID targetPlayer = Bukkit.getPlayer(args[1]).getUniqueId();
-                new AdminRemoveTrust(p,args,targetPlayer,databaseManager, playerDataCache);
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+                UUID targetUUID = offlinePlayer.getUniqueId();
+
+                new AdminAddTrust(p, args, targetUUID, databaseManager, playerDataCache);
             }
             case "list" -> {
                 if (!sender.hasPermission("trust.admin.list")) {
@@ -125,7 +129,7 @@ public class MainCommand extends AbstractCommand {
         if (args.length == 2) {
 
             switch (args[0].toLowerCase()) {
-                case "add", "remove", "list" -> {
+                case "add", "remove", "list", "debug" -> {
                     List<String> list = new ArrayList<>(Arrays.stream(Bukkit.getOfflinePlayers())
                             .map(OfflinePlayer::getName)
                             .filter(name -> name != null && name.toLowerCase().startsWith(args[1].toLowerCase()))

@@ -111,7 +111,7 @@ public final class TrustPlugin extends JavaPlugin {
                 Bukkit.getPluginManager().registerEvents(new org.referix.event.PlayerEvent(database, playerDataCache), this);
                 logger = new FileLogger(this);
 
-                Bukkit.getPluginManager().registerEvents(new ReputationListener(this), this);
+                Bukkit.getPluginManager().registerEvents(new ReputationListener(this, playerDataCache), this);
                 Bukkit.getPluginManager().registerEvents(new ListenerSaveZone(safeZoneManager, playerDataCache), this);
 
                 new AddReputation("trust", database);

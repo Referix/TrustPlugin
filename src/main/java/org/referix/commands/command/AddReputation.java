@@ -62,7 +62,10 @@ public class AddReputation extends AbstractCommand {
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            actor.sendMessage(Component.text("Гравець не знайдений або не в мережі."));
+            target = Bukkit.getOfflinePlayer(args[0]).getPlayer();
+        }
+        if (target != null && target.equals(actor)) {
+            actor.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("cant_trust_yourself"));
             return true;
         }
 

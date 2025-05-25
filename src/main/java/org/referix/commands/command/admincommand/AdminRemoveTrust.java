@@ -9,6 +9,8 @@ import org.referix.utils.PlayerDataCache;
 
 import java.util.UUID;
 
+import static org.referix.event.ReputationListener.sendToVelocityCache;
+
 public class AdminRemoveTrust implements HelperCommand{
 
 
@@ -36,6 +38,7 @@ public class AdminRemoveTrust implements HelperCommand{
                             databaseManager.updatePlayerTrust(targetPlayerID, newScore);
                             if (playerDataCache.isLoaded()){
                                 playerDataCache.set(playerTrustDBs.getFirst().getPlayerId(), String.valueOf(Math.floor(newScore)));
+                                sendToVelocityCache(p,playerTrustDBs.getFirst().getPlayerId().toString(),String.valueOf(Math.floor(newScore)));
                                 p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("trust_removed","score" , args[2]));
                             }
                         }

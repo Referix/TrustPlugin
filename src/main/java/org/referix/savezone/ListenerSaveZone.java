@@ -3,7 +3,10 @@ package org.referix.savezone;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -61,9 +64,15 @@ public class ListenerSaveZone implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.hasBlock() && isInSafeZoneAndNoTrusted(event.getClickedBlock().getLocation(), event.getPlayer().getUniqueId())) {
-            event.getPlayer().sendMessage(message);
-            event.setCancelled(true);
+        if (event.hasBlock()) {
+            Block clicked = event.getClickedBlock();
+            if (clicked != null && isInSafeZoneAndNoTrusted(clicked.getLocation(), event.getPlayer().getUniqueId())) {
+                // Дозволити клік по верстаку
+                if (clicked.getType() == Material.CRAFTING_TABLE) return;
+
+                event.getPlayer().sendMessage(message);
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -94,6 +103,12 @@ public class ListenerSaveZone implements Listener {
             if (event.getRightClicked() instanceof ArmorStand) {
                 event.getPlayer().sendMessage(message);
                 event.setCancelled(true);
+            }
+            if (isInSafeZoneAndNoTrusted(event.getRightClicked().getLocation(), event.getPlayer().getUniqueId())) {
+                if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
+                    event.getPlayer().sendMessage(message);
+                    event.setCancelled(true);
+                }
             }
         }
     }

@@ -21,6 +21,8 @@ import org.referix.utils.PlayerDataCache;
 
 import java.util.*;
 
+import static org.referix.event.ReputationListener.sendToVelocityCache;
+
 public class TrustAccept extends AbstractCommand {
     private DatabaseProvider databaseManager;
     private PlayerDataCache playerDataCache;
@@ -171,6 +173,8 @@ public class TrustAccept extends AbstractCommand {
                             "delta", String.format("%.2f", Math.abs(delta))
                     );
                     playerDataCache.set(targetId, String.valueOf(Math.floor(newTrust)));
+                    sendToVelocityCache(player,targetId.toString(),String.valueOf(Math.floor(newTrust)));
+
                     fileLogger.logReputationChange(
                             Objects.requireNonNull(Bukkit.getOfflinePlayer(actorId).getName()),
                             Math.abs(actorList.getFirst().getScore()),

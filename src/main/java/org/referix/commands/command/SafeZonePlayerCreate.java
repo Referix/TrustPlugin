@@ -66,9 +66,9 @@ public class SafeZonePlayerCreate extends AbstractCommand {
                         int playerChunkZ = player.getLocation().getChunk().getZ();
 
                         int startChunkX = playerChunkX - radius;
-                        int endChunkX = playerChunkX + radius - 1;
+                        int endChunkX = playerChunkX + radius;
                         int startChunkZ = playerChunkZ - radius;
-                        int endChunkZ = playerChunkZ + radius - 1;
+                        int endChunkZ = playerChunkZ + radius;
 
                         SafeZoneDB newZone = new SafeZoneDB(
                                 TrustPlugin.getInstance().getServerID(),
