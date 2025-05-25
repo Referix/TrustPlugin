@@ -16,7 +16,10 @@ setting:
   base_untrust: -1
   #кількість очків довіри для отримання доступу до /trust /untrust
   trust_player: 100
-
+#  нижня межа для доступу до сейф зон
+  trust_down_safezone: 100
+#  верхння межа для створення сейф зон
+  trust_up_safezone: 500
   #перша межа
   first_line:
       score: 30
@@ -26,6 +29,18 @@ setting:
   second_line:
       score: 10
       command: "ban {player}"
+
+save_zone:
+  #дефолтна сейв зона
+  default_zone:
+
+    #початкова точка ( не координати а чанк)
+    start_chunk_x: 10
+    end_chunk_x: 10
+
+    #кінцева точка ( не координати а чанк)
+    start_chunk_z: -10
+    end_chunk_z: -10
 
 database:
   type: "sqlite"  # або "mysql"
@@ -39,5 +54,3 @@ database:
 
   sqlite:
     file: "data.db"
-
-save-zone:

@@ -2,6 +2,7 @@ package org.referix.commands.command;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
@@ -59,14 +60,7 @@ public class RemoveReputation extends AbstractCommand {
             }
         }
 
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null) {
-            target = Bukkit.getOfflinePlayer(args[0]).getPlayer();
-        }
-        if (target != null && target.equals(actor)) {
-            actor.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("cant_trust_yourself"));
-            return true;
-        }
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         double change = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();

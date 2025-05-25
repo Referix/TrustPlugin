@@ -4,26 +4,26 @@ main: org.referix.trustPlugin.TrustPlugin
 api-version: '1.21'
 depend: [LuckPerms]
 commands:
+  trusts:
+    description: Головна команда для керування довірою
+    usage: /trusts <help|reload|add|remove>
+    permission: trust.admin
   trust:
-    usage: /<command>
-    description: add reputation
-    permission: trust.reload
-  addrep:
     usage: /<command>
     description: add reputation
     permission: trust.addreputation
     alias:
       - trust
-  removerep:
+  safezone:
+    usage: /<command>
+    description: право виконувати команду для створення власноъ сейв зони
+    permission: trust.safezone.create
+  untrust:
     usage: /<command>
     description: remove reputation
     permission: trust.removereputation
     alias:
       - untrust
-  listrep:
-    description: Показує історію змін репутації
-    permission: trust.list
-    usage: /listrep [all|<гравець>] [сторінка]
   trustaccept:
     description: додати репутацію
     permission: trust.accept
@@ -32,3 +32,27 @@ commands:
     description: відмінити додавання цієї репутації
     permission: trust.deny
     usage: /listrep [all|<гравець>] [сторінка]
+permissions:
+  trust.admin:
+    description: Дозвіл на використання команди /trusts
+    default: op
+
+  trust.admin.list:
+    description: Дозвіл на перегляд списку /trusts list
+    default: op
+
+  trust.admin.help:
+    description: Дозвіл на перегляд допомоги /trusts help
+    default: op
+
+  trust.admin.reload:
+    description: Дозвіл на перезавантаження плагіна /trusts reload
+    default: op
+
+  trust.admin.add:
+    description: Дозвіл на додавання довіри /trusts add
+    default: op
+
+  trust.admin.remove:
+    description: Дозвіл на видалення довіри /trusts remove
+    default: op
