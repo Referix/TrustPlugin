@@ -44,6 +44,7 @@ public class ConfigManager {
                 config.set("messages.cooldown", "<#00ff00>Зачекайте ще {time}");
                 config.set("messages.in_safe_zone", "<#00ff00>Ей! тобі заборонено будь що тут робити доки довіра не стане 100");
                 config.set("messages.cant_trust_yourself", "<#00ff00>Ей! хитрий жук?");
+                config.set("messages.safezone_deleted", "<#00ff00>Сейф зону видаленно");
 
                 config.set("setting.default_trust_first_join", 50);
                 config.set("setting.trustcooldown", 1);
@@ -126,6 +127,7 @@ public class ConfigManager {
             case "cooldown" -> config.getString("messages.cooldown");
             case "in_safe_zone" -> config.getString("messages.in_safe_zone");
             case "cant_trust_yourself" -> config.getString("messages.cant_trust_yourself");
+            case "safezone_deleted" -> config.getString("messages.safezone_deleted");
             default -> "";
         };
     }

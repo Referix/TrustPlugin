@@ -49,7 +49,7 @@ public class TrustDeny extends AbstractCommand {
                 player.sendMessage(ChatColor.RED + "Запис c ID " + id + " не найдено.");
                 return;
             }
-            databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
+            databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id,null);
             player.sendMessage(Component.text("Запис с ID:" + id + " удалено!").color(TextColor.color(0, 255, 0)));
             fileLogger.logReputationChange(
                     Objects.requireNonNull(Bukkit.getOfflinePlayer(changes.getFirst().getActor_id()).getName()),

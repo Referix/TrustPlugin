@@ -118,7 +118,7 @@ public final class TrustPlugin extends JavaPlugin {
                 new RemoveReputation("untrust", database);
                 new TrustAccept("trustaccept", database, playerDataCache, logger);
                 new TrustDeny("trustdeny", database, logger);
-                new MainCommand("trusts", database, playerDataCache);
+                new MainCommand("trusts", database, playerDataCache, safeZoneManager);
                 new SafeZonePlayerCreate("safezone", configManager, database, safeZoneManager);
 
                 new PlayerTrustPlaceholders(this, playerDataCache).register();

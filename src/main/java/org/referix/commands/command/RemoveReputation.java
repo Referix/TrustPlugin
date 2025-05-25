@@ -61,6 +61,10 @@ public class RemoveReputation extends AbstractCommand {
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        if (actorId.equals(target.getUniqueId())) {
+            actor.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("cant_trust_yourself"));
+            return true;
+        }
 
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         double change = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();

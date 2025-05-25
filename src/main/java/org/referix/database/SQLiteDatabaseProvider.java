@@ -336,14 +336,25 @@ public class SQLiteDatabaseProvider implements DatabaseProvider {
     }
 
     @Override
-    public void deleteById(DatabaseTable table, Object id) {
+    public void deleteById(DatabaseTable table, Object id, Runnable onComplete) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 String sql = "DELETE FROM " + table.getTableName() + " WHERE id = ?";
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setObject(1, id);
-                    stmt.executeUpdate();
+                    int affectedRows = stmt.executeUpdate();
+
+                    if (affectedRows > 0) {
+                        TrustPlugin.getInstance().debug("[DEBUG] Видалено запис із таблиці " + table.getTableName() + ", ID: " + id);
+                    } else {
+                        TrustPlugin.getInstance().debug("[DEBUG] Не знайдено запису для видалення у таблиці " + table.getTableName() + ", ID: " + id);
+                    }
+
+                    if (onComplete != null) {
+                        Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), onComplete);
+                    }
+
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

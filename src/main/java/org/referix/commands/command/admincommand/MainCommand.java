@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.referix.commands.AbstractCommand;
 import org.referix.database.DatabaseProvider;
+import org.referix.savezone.SafeZoneManager;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.PlayerDataCache;
 
@@ -17,12 +18,14 @@ import java.util.UUID;
 public class MainCommand extends AbstractCommand {
     private DatabaseProvider databaseManager;
     private PlayerDataCache playerDataCache;
+    private SafeZoneManager safeZoneManager;
 
 
-    public MainCommand(String command, DatabaseProvider databaseManager, PlayerDataCache playerDataCache) {
+    public MainCommand(String command, DatabaseProvider databaseManager, PlayerDataCache playerDataCache, SafeZoneManager safeZoneManager) {
         super(command);
         this.databaseManager = databaseManager;
         this.playerDataCache = playerDataCache;
+        this.safeZoneManager = safeZoneManager;
     }
 
     @Override
@@ -64,6 +67,11 @@ public class MainCommand extends AbstractCommand {
             case "remove" -> {
                 if (!sender.hasPermission("trust.admin.remove")) {
                     sender.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("no_permission"));
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("safezone") && args.length == 2) {
+                    new SafeZoneDelete(p,args, safeZoneManager);
+                    p.sendMessage(TrustPlugin.getInstance().getConfigManager().getMessage("safezone_deleted"));
                     return true;
                 }
                 if (args.length < 3) {
@@ -136,6 +144,9 @@ public class MainCommand extends AbstractCommand {
                             .distinct()
                             .sorted()
                             .toList());
+                    if (args[0].equalsIgnoreCase("remove")) {
+                        list.add("safezone");
+                    }
                     if (args[0].equalsIgnoreCase("list")) {
                         list.add("all");
                     };

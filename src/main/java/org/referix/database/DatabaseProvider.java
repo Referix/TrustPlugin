@@ -20,7 +20,7 @@ public interface DatabaseProvider {
     <T> void searchDataRaw(String sql, Object[] params, Class<T> clazz, Consumer<List<T>> callback);
     void countRows(String sql, Consumer<Integer> callback);
     void countRows(String sql, Object[] params, Consumer<Integer> callback);
-    void deleteById(DatabaseTable table, Object id);
+    void deleteById(DatabaseTable table, Object id, Runnable onComplete);
     void updateSafeZone(SafeZoneDB safeZone, Runnable callback);
 }
 

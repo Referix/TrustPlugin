@@ -99,18 +99,13 @@ public class ListenerSaveZone implements Listener {
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        if (isInSafeZoneAndNoTrusted(event.getPlayer().getLocation(), event.getPlayer().getUniqueId())) {
-            if (event.getRightClicked() instanceof ArmorStand) {
+        if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
+            if (isInSafeZoneAndNoTrusted(event.getRightClicked().getLocation(), event.getPlayer().getUniqueId())) {
                 event.getPlayer().sendMessage(message);
                 event.setCancelled(true);
             }
-            if (isInSafeZoneAndNoTrusted(event.getRightClicked().getLocation(), event.getPlayer().getUniqueId())) {
-                if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
-                    event.getPlayer().sendMessage(message);
-                    event.setCancelled(true);
-                }
-            }
         }
     }
+
 
 }

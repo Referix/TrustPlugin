@@ -90,7 +90,7 @@ public class TrustAccept extends AbstractCommand {
 
                     databaseManager.updatePlayerTrust(targetId, newTrust);
 
-                    databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id);
+                    databaseManager.deleteById(DatabaseTable.TRUST_CHANGES, id,null);
 
                     String sign = delta >= 0 ? "+" : "-";
                     if (newTrust < firstLineScore && newTrust > secondLineScore){
@@ -108,7 +108,7 @@ public class TrustAccept extends AbstractCommand {
                     } else if (newTrust > firstLineScore) {
                         databaseManager.searchData(DatabaseTable.PLAYER_LINES, "player_id = '" + targetId + "'", PlayerCommandDB.class, lines -> {
                             if (lines.isEmpty()) return;
-                            databaseManager.deleteById(DatabaseTable.PLAYER_LINES, lines.getFirst().getId());
+                            databaseManager.deleteById(DatabaseTable.PLAYER_LINES, lines.getFirst().getId(),null);
                         });
                     }
                     if (newTrust < secondLineScore){
