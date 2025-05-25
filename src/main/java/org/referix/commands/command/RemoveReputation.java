@@ -66,7 +66,7 @@ public class RemoveReputation extends AbstractCommand {
         }
 
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        double change = TrustPlugin.getInstance().getConfigManager().getRemoveChange();
+        double change = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();
 
         TrustChangeDB trustChangeDB = new TrustChangeDB(
                 target.getUniqueId(),

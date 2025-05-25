@@ -45,7 +45,7 @@ public class PlayerDataCache {
     public boolean isTrusted(UUID uuid) {
         double target_score = getScore(uuid);
         double trusted_score = configManager.getDownSafeZone();
-        System.out.println("target_score " + target_score + " trusted_score " + trusted_score);
+        TrustPlugin.getInstance().debug("target_score " + target_score + " trusted_score " + trusted_score);
         return target_score >= trusted_score;
     }
 

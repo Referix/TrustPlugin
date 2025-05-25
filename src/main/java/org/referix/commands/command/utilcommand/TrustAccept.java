@@ -71,7 +71,6 @@ public class TrustAccept extends AbstractCommand {
                     double baseTrust = TrustPlugin.getInstance().getConfigManager().getBaseTrust();
                     double baseUntrust = TrustPlugin.getInstance().getConfigManager().getBaseUntrust();
                     double getPermToTrust = TrustPlugin.getInstance().getConfigManager().getTrustLineScore();
-                    double getDownSZLine = TrustPlugin.getInstance().getConfigManager().getDownSafeZone();
                     double getUpSZLine = TrustPlugin.getInstance().getConfigManager().getUpSafeZone();
 
                     double delta;

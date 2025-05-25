@@ -67,7 +67,7 @@ public class AddReputation extends AbstractCommand {
         }
 
         String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        double change = TrustPlugin.getInstance().getConfigManager().getAddChange();
+        double change = TrustPlugin.getInstance().getConfigManager().getBaseTrust();
 
         TrustChangeDB trustChangeDB = new TrustChangeDB(
                 target.getUniqueId(),

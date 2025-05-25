@@ -43,16 +43,27 @@ public class MySQLDatabaseProvider implements DatabaseProvider {
             @Override
             public void run() {
                 try (Statement stmt = connection.createStatement()) {
-                    stmt.execute("CREATE TABLE IF NOT EXISTS " + table.getTableName() + " (" + table.getColumns() + ")");
-                    // Після успіху виконуємо callback у головному потоці
-                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.onSuccess());
+                    // Використовуємо готовий рядок CREATE TABLE із правильними кавичками та
+                    // без зайвих дужок/сʼєднань
+                    String sql = table.getCreateTableSQL();
+                    stmt.execute(sql);
+
+                    // Після успіху викликаємо callback у головному потоці
+                    Bukkit.getScheduler().runTask(
+                            TrustPlugin.getInstance(),
+                            callback::onSuccess
+                    );
                 } catch (SQLException e) {
                     // При помилці викликаємо помилковий callback у головному потоці
-                    Bukkit.getScheduler().runTask(TrustPlugin.getInstance(), () -> callback.onError(e));
+                    Bukkit.getScheduler().runTask(
+                            TrustPlugin.getInstance(),
+                            () -> callback.onError(e)
+                    );
                 }
             }
         }.runTaskAsynchronously(TrustPlugin.getInstance());
     }
+
 
     @Override
     public <T> void insertDataAsync(DatabaseTable table, T object, Runnable callback) {
