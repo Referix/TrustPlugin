@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.referix.trustPlugin.TrustPlugin;
 import org.referix.utils.PlayerDataCache;
@@ -96,6 +97,16 @@ public class ListenerSaveZone implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onHangingBreak(HangingBreakEvent event) {
+        if (event.getCause() == HangingBreakEvent.RemoveCause.ENTITY) return; // це вже обробляє onHangingBreakByEntity
+
+        if (safeZoneManager.isSafeZone(event.getEntity().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
